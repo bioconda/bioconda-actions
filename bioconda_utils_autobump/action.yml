@@ -1,0 +1,5 @@
+name: "Run autobump"
+description: "Run autobump"
+runs:
+  using: "node12"
+  main: "lib/main.js"
