@@ -44,19 +44,21 @@ async function run() {
   await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "bioconda"]);
   await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "conda-forge"]);
 
+
   // Step 3: Install bioconda-utils, which is currently the most recent version
   // await exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]);
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils"]);
+  await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils"]);
 
   // step 4: cleanup
   await exec.exec(home.concat("/miniconda/bin/conda"), ["clean", "-y", "--all"]);
 
   // Add local channel as highest priority
-  await io.mkdirP(home.concat("/miniconda/conda-bld/noarch"));
-  await io.mkdirP(home.concat("/miniconda/conda-bld/linux-64"));
-  await io.mkdirP(home.concat("/miniconda/conda-bld/osx-64"));
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["index", home.concat("/miniconda/conda-bld")]);
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/conda-bld")]);
+  await io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/noarch"));
+  await io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/linux-64"));
+  await io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/osx-64"));
+  await exec.exec(home.concat("/miniconda/bin/conda"), ["index", home.concat("/miniconda/envs/bioconda/conda-bld")]);
+  await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/envs/bioconda/conda-bld")]);
+  core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
 }
 
 try {
