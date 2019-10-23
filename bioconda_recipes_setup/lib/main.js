@@ -36,7 +36,6 @@ function run() {
         else {
             var tag = "MacOSX";
             var home = "/Users/runner";
-            envVars["MINICONDA_VER"] = "latest";
         }
         var URL = "https://repo.continuum.io/miniconda/Miniconda3-" + envVars["MINICONDA_VER"] + "-" + tag + "-x86_64.sh";
         // Step 1: Download and install conda
