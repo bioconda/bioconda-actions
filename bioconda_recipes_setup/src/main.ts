@@ -48,6 +48,7 @@ async function run() {
   // Step 3: Install bioconda-utils, which is currently the most recent version
   // await exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]);
   await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils"]);
+  core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
 
   // step 4: cleanup
   await exec.exec(home.concat("/miniconda/bin/conda"), ["clean", "-y", "--all"]);
@@ -58,7 +59,6 @@ async function run() {
   await io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/osx-64"));
   await exec.exec(home.concat("/miniconda/bin/conda"), ["index", home.concat("/miniconda/envs/bioconda/conda-bld")]);
   await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/envs/bioconda/conda-bld")]);
-  core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
 }
 
 try {
