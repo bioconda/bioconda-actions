@@ -1,0 +1,5 @@
+name: "Setup Bioconda-utils"
+description: "Setup Bioconda-utils"
+runs:
+  using: "node12"
+  main: "lib/main.js"
