@@ -38,7 +38,7 @@ async function run() {
       }}
     };
     await exec.exec("xcode-select", ["-p"], options);
-    CONDA_BUILD_SYSROOT = CONDA_BUILD_SYSROOT.concat("/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk");
+    CONDA_BUILD_SYSROOT = CONDA_BUILD_SYSROOT.concat("/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk").replace(" ", "");
     core.exportVariable("CONDA_BUILD_SYSROOT", CONDA_BUILD_SYSROOT);
   }
   // Strip the v from the version
@@ -60,7 +60,7 @@ async function run() {
 
   // Step 3: Install bioconda-utils, which is currently the most recent version
   envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "");
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
+  await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "conda-forge-ci-setup"]);
   core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
 
   // step 4: cleanup
