@@ -42,7 +42,6 @@ async function run() {
     //core.exportVariable("CONDA_BUILD_SYSROOT", CONDA_BUILD_SYSROOT);
   }
   // Strip the v from the version
-  envVars["MINICONDA_VER"] = envVars["MINICONDA_VER"].replace("v", "");
   var URL = "https://repo.continuum.io/miniconda/Miniconda3-" + envVars["MINICONDA_VER"] + "-" + tag + "-x86_64.sh";
 
   // Step 1: Download and install conda
@@ -60,6 +59,7 @@ async function run() {
 
 
   // Step 3: Install bioconda-utils, which is currently the most recent version
+  envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "");
   if(process.platform == "linux") {
     await exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
   } else {
