@@ -41,6 +41,8 @@ async function run() {
     //CONDA_BUILD_SYSROOT = CONDA_BUILD_SYSROOT.concat("/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk");
     //core.exportVariable("CONDA_BUILD_SYSROOT", CONDA_BUILD_SYSROOT);
   }
+  // Strip the v from the version
+  envVars["MINICONDA_VER"] = envVars["MINICONDA_VER"].replace("v", "");
   var URL = "https://repo.continuum.io/miniconda/Miniconda3-" + envVars["MINICONDA_VER"] + "-" + tag + "-x86_64.sh";
 
   // Step 1: Download and install conda
