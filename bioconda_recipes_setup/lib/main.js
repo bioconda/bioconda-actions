@@ -37,16 +37,17 @@ function run() {
             var tag = "MacOSX";
             var home = "/Users/runner";
             // We need to set CONDA_BUILD_SYSROOT on OSX
-            //let CONDA_BUILD_SYSROOT = '';
-            //var options = {};
-            //options = { listeners: {
-            //  stdout: (data: Buffer) => {
-            //    CONDA_BUILD_SYSROOT += data.toString();
-            //  }}
-            //};
-            //await exec.exec("xcode-select", ["-p"], options);
-            //CONDA_BUILD_SYSROOT = CONDA_BUILD_SYSROOT.concat("/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk");
-            //core.exportVariable("CONDA_BUILD_SYSROOT", CONDA_BUILD_SYSROOT);
+            let CONDA_BUILD_SYSROOT = '';
+            var options = {};
+            options = { listeners: {
+                    stdout: (data) => {
+                        CONDA_BUILD_SYSROOT += data.toString();
+                    }
+                }
+            };
+            yield exec.exec("xcode-select", ["-p"], options);
+            CONDA_BUILD_SYSROOT = CONDA_BUILD_SYSROOT.concat("/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk");
+            core.exportVariable("CONDA_BUILD_SYSROOT", CONDA_BUILD_SYSROOT);
         }
         // Strip the v from the version
         var URL = "https://repo.continuum.io/miniconda/Miniconda3-" + envVars["MINICONDA_VER"] + "-" + tag + "-x86_64.sh";
@@ -63,12 +64,7 @@ function run() {
         yield exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "conda-forge"]);
         // Step 3: Install bioconda-utils, which is currently the most recent version
         envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "");
-        if (process.platform == "linux") {
-            yield exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
-        }
-        else {
-            yield exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "conda-forge-ci-setup"]);
-        }
+        yield exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
         core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
         // step 4: cleanup
         yield exec.exec(home.concat("/miniconda/bin/conda"), ["clean", "-y", "--all"]);
