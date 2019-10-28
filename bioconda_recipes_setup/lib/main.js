@@ -76,6 +76,7 @@ function run() {
         yield exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/envs/bioconda/conda-bld")]);
     });
 }
+;
 try {
     run();
 }

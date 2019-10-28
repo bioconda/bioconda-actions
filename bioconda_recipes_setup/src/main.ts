@@ -72,7 +72,7 @@ async function run() {
   await io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/osx-64"));
   await exec.exec(home.concat("/miniconda/bin/conda"), ["index", home.concat("/miniconda/envs/bioconda/conda-bld")]);
   await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/envs/bioconda/conda-bld")]);
-}
+};
 
 try {
   run();
