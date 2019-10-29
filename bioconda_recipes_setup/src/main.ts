@@ -59,8 +59,8 @@ async function run() {
 
 
   // Step 3: Install bioconda-utils, which is currently the most recent version
-  envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "");
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "conda-forge-ci-setup"]);
+  envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("\n", "");
+  await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
   core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
 
   // step 4: cleanup
