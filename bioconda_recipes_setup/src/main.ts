@@ -29,17 +29,17 @@ async function run() {
     var tag = "MacOSX";
     var home = "/Users/runner";
 
-    // We need to set CONDA_BUILD_SYSROOT on OSX
-    let CONDA_BUILD_SYSROOT = '';
-    var options = {};
-    options = { listeners: {
-      stdout: (data: Buffer) => {
-        CONDA_BUILD_SYSROOT += data.toString();
-      }}
-    };
-    await exec.exec("xcode-select", ["-p"], options);
-    CONDA_BUILD_SYSROOT = CONDA_BUILD_SYSROOT.concat("/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk").replace(" ", "");
-    core.exportVariable("CONDA_BUILD_SYSROOT", CONDA_BUILD_SYSROOT);
+    //// We need to set CONDA_BUILD_SYSROOT on OSX
+    //let CONDA_BUILD_SYSROOT = '';
+    //var options = {};
+    //options = { listeners: {
+    //  stdout: (data: Buffer) => {
+    //    CONDA_BUILD_SYSROOT += data.toString();
+    //  }}
+    //};
+    //await exec.exec("xcode-select", ["-p"], options);
+    //CONDA_BUILD_SYSROOT = CONDA_BUILD_SYSROOT.concat("/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk").replace(" ", "");
+    //core.exportVariable("CONDA_BUILD_SYSROOT", CONDA_BUILD_SYSROOT);
   }
   // Strip the v from the version
   var URL = "https://repo.continuum.io/miniconda/Miniconda3-" + envVars["MINICONDA_VER"] + "-" + tag + "-x86_64.sh";
@@ -60,7 +60,12 @@ async function run() {
 
   // Step 3: Install bioconda-utils, which is currently the most recent version
   envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "").replace("\n", "");
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
+  if(process.platform == "linux") {
+    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
+  } else {
+    // libarchive 3.4.0 is broken on OSX, https://github.com/conda-forge/libarchive-feedstock/issues/43
+    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "libarchive=3.3.3"]);
+  }
   core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
 
   // step 4: cleanup
