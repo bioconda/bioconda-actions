@@ -63,7 +63,7 @@ function run() {
         yield exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "bioconda"]);
         yield exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "conda-forge"]);
         // Step 3: Install bioconda-utils, which is currently the most recent version
-        envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("\n", "");
+        envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "").replace("\n", "");
         yield exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
         core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
         // step 4: cleanup
