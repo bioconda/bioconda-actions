@@ -18,7 +18,12 @@ function sendComment(context, comment) {
     const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/" + issueNumber + "/comments";
     const payLoad = { 'body': comment };
     request.post(URL, {
-        json: {
+        'auth': {
+            'user': 'dpryan79',
+            'pass': TOKEN,
+            'sendImmediately': true
+        },
+        'json': {
             body: comment
         }
     });
@@ -59,6 +64,7 @@ function run() {
             const comment = jobContext['event']['comment']['body'];
             console.log('the comment is: ' + comment);
             if (comment.includes('@bioconda-bot')) {
+                sendComment(jobContext, "> " + comment);
                 // Cases are:
                 //   please update
                 //   please merge
