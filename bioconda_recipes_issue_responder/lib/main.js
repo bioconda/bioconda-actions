@@ -21,11 +21,15 @@ function run() {
         console.log(jobContext);
     });
 }
-try {
-    run();
+function runRunner() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield run();
+        }
+        catch (e) {
+            console.log(e);
+            process.exit(1);
+        }
+    });
 }
-catch (e) {
-    console.log(e);
-    process.exit(1);
-}
-;
+runRunner();

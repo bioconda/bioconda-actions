@@ -13,10 +13,13 @@ async function run() {
   console.log(jobContext);
 }
 
-try {
-  run()
+async function runRunner() {
+  try {
+    await run();
+  } catch(e) {
+    console.log(e);
+    process.exit(1);
+  }
 }
-catch(e) {
-  console.log(e);
-  process.exit(1);
-};
+
+runRunner();
