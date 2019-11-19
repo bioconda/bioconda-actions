@@ -46,7 +46,7 @@ async function run() {
       console.log('skipping');
       process.exit(0);
     }
-    const comment = <string> jobContext['comment']['body'];
+    const comment = <string> jobContext['event']['comment']['body'];
     console.log('the comment is: ' + comment);
     if(comment.includes('@bioconda-bot')) {
       // Cases are:
