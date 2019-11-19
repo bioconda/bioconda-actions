@@ -61,6 +61,7 @@ async function run() {
 //      // Check if the user is part of bioconda, otherwise ping
 //      pingBioconda(jobContext);
     }
+    process.exit(0);
   }
 }
 
