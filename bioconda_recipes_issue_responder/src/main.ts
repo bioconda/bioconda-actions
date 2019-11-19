@@ -6,11 +6,11 @@ const exec = require('@actions/exec');
 
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
 async function run() {
+  await exec.exec('env');
   const foo = core.getInput('GITHUB_SHA');
   console.log(foo);
-  await exec.exec('env');
-  const jobContext = JSON.parse(core.getInput('JOB_CONTEXT'));
-  console.log(jobContext);
+  //const jobContext = JSON.parse(core.getInput('JOB_CONTEXT'));
+  //console.log(jobContext);
 }
 
 async function runRunner() {
