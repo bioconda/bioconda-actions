@@ -46,6 +46,7 @@ function mergeInMaster(context) {
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const jobContext = JSON.parse(process.env['JOB_CONTEXT']);
+        console.log(jobContext);
         if (jobContext['issue']['pull_request'] !== undefined) {
             console.log('The actor is ' + jobContext['actor']);
             if (jobContext['actor'] != 'dpryan79') {
@@ -66,6 +67,7 @@ function run() {
                 //      }
                 //    } else if commet.includes('@bioconda/') {
                 //      // Check if the user is part of bioconda, otherwise ping
+                //      // check jobContext['event']['comment']['author_association']
                 //      pingBioconda(jobContext);
             }
             process.exit(0);

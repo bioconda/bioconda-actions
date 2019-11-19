@@ -39,6 +39,7 @@ function mergeInMaster(context) {
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
 async function run() {
   const jobContext = JSON.parse(<string> process.env['JOB_CONTEXT']);
+  console.log(jobContext);
   if(jobContext['issue']['pull_request'] !== undefined) {
     console.log('The actor is ' + jobContext['actor']);
     if(jobContext['actor'] != 'dpryan79') {
@@ -59,6 +60,7 @@ async function run() {
 //      }
 //    } else if commet.includes('@bioconda/') {
 //      // Check if the user is part of bioconda, otherwise ping
+//      // check jobContext['event']['comment']['author_association']
 //      pingBioconda(jobContext);
     }
     process.exit(0);
