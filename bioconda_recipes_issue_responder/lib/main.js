@@ -8,15 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const core = require('@actions/core');
-// const exec = require('@actions/exec');
+const exec = require('@actions/exec');
 // const tc = require('@actions/tool-cache');
 // const io = require('@actions/io');
 // const fs = require('fs');
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const foo = JSON.parse(core.getInput('GITHUB_SHA'));
+        const foo = core.getInput('GITHUB_SHA');
         console.log(foo);
+        yield exec.exec('env');
         const jobContext = JSON.parse(core.getInput('JOB_CONTEXT', { required: true }));
         console.log(jobContext);
     });
