@@ -4,21 +4,26 @@ const request = require('request');
 // const io = require('@actions/io');
 // const fs = require('fs');
 
+function requestCallback(error, response, body) {
+  if (!error && response.statusCode == 200) {
+    const info = JSON.parse(body);
+    console.log(info.stargazers_count + " Stars");
+    console.log(info.forks_count + " Forks");
+    process.exit(1)
+  }
+}
+
 function sendComment(context, comment) {
   const TOKEN = process.env['BOT_TOKEN'];
 
   const issueNumber = context['event']['issue']['number'];
   const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/" + issueNumber + "/comments";
   const payLoad = {'body': comment};
-  request.post(URL, {
-    'auth': {
-      'user': 'dpryan79',
-      'pass': TOKEN,
-      'sendImmediately': true
-    },
+  request.post({
+    'url': URL,
     'json': {
       body: comment
-    }});
+    }}, requestCallback).auth(null, null, true, TOKEN);
 }
 
 function mergeInMaster(context) {
