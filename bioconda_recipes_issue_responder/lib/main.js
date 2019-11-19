@@ -15,7 +15,9 @@ const exec = require('@actions/exec');
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log('running env');
         yield exec.exec('env');
+        console.log('fetching GITHUB_SHA');
         const foo = core.getInput('GITHUB_SHA');
         console.log(foo);
         //const jobContext = JSON.parse(core.getInput('JOB_CONTEXT'));
@@ -34,4 +36,5 @@ function runRunner() {
     });
 }
 runRunner();
+console.log('finished');
 process.exit(1);
