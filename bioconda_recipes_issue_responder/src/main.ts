@@ -9,7 +9,7 @@ async function run() {
   const foo = core.getInput('GITHUB_SHA');
   console.log(foo);
   await exec.exec('env');
-  const jobContext = JSON.parse(core.getInput('JOB_CONTEXT', { required: true}));
+  const jobContext = JSON.parse(core.getInput('JOB_CONTEXT'));
   console.log(jobContext);
 }
 
@@ -23,3 +23,4 @@ async function runRunner() {
 }
 
 runRunner();
+process.exit(1);
