@@ -15,6 +15,8 @@ const core = require('@actions/core');
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        const foo = JSON.parse(core.getInput('GITHUB_SHA'));
+        console.log(foo);
         const jobContext = JSON.parse(core.getInput('JOB_CONTEXT', { required: true }));
         console.log(jobContext);
     });
