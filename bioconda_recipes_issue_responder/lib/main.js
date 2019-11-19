@@ -53,6 +53,7 @@ function run() {
                 console.log('skipping');
                 process.exit(0);
             }
+            console.log('The comment is ' + jobContext['event']['comment']);
             const comment = jobContext['event']['comment']['body'];
             console.log('the comment is: ' + comment);
             if (comment.includes('@bioconda-bot')) {
