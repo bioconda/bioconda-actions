@@ -5,6 +5,8 @@ const request = require('request');
 // const fs = require('fs');
 
 function sendComment(context, comment) {
+  const TOKEN = process.env['BOT_TOKEN'];
+
   const issueNumber = context['issue']['number'];
   const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/" + issueNumber + "/comments";
   const payLoad = {'body': comment};
@@ -15,6 +17,8 @@ function sendComment(context, comment) {
 }
 
 function mergeInMaster(context) {
+  const TOKEN = process.env['BOT_TOKEN'];
+
   let branch = '';
   const options = {listeners: {
     stdout: (data: Buffer) => {
