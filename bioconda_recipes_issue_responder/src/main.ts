@@ -5,7 +5,6 @@ const request = require('request');
 // const fs = require('fs');
 
 function sendComment(context, comment) {
-  // url?
   const issueNumber = context['issue']['number'];
   const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/" + issueNumber + "/comments";
   const payLoad = {'body': comment};
@@ -39,14 +38,15 @@ function mergeInMaster(context) {
 
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
 async function run() {
-  console.log(process.env);
-  console.log(process.env['JOB_CONTEXT']);
   const jobContext = JSON.parse(<string> process.env['JOB_CONTEXT']);
   if(jobContext['issue']['pull_request'] !== undefined) {
+    console.log('The actor is ' + jobContext['actor']);
     if(jobContext['actor'] != 'dpryan79') {
+      console.log('skipping');
       process.exit(0);
     }
     const comment = <string> jobContext['comment']['body'];
+    console.log('the comment is: ' + comment);
     if(comment.includes('@bioconda-bot')) {
       // Cases are:
       //   please update
