@@ -27,6 +27,8 @@ function run() {
                 }
             } };
         yield exec.exec('env', options);
+        console.log(myOutput);
+        console.log(myError);
         console.log('fetching GITHUB_SHA');
         const foo = core.getInput('GITHUB_SHA');
         console.log(foo);
