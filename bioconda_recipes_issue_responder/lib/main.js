@@ -16,8 +16,9 @@ const core = require('@actions/core');
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(process.env);
-        //const jobContext = JSON.parse(process.env['JOB_CONTEXT']);
-        //console.log(jobContext);
+        console.log(process.env['JOB_CONTEXT']);
+        const jobContext = JSON.parse(process.env['JOB_CONTEXT']);
+        console.log("sha: " + jobContext['sha']);
     });
 }
 function runRunner() {

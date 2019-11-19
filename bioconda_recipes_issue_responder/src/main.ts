@@ -7,8 +7,9 @@ const core = require('@actions/core');
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
 async function run() {
   console.log(process.env);
-  //const jobContext = JSON.parse(process.env['JOB_CONTEXT']);
-  //console.log(jobContext);
+  console.log(process.env['JOB_CONTEXT']);
+  const jobContext = JSON.parse(<string> process.env['JOB_CONTEXT']);
+  console.log("sha: " + jobContext['sha']);
 }
 
 async function runRunner() {
