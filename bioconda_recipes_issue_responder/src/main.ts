@@ -21,8 +21,7 @@ async function run() {
   }};
   //await exec.exec('env', options);
   console.log('fetching GITHUB_SHA');
-  const foo = core.getInput('GITHUB_SHA');
-  console.log(foo);
+  console.log(process.env);
   console.log("stdout: " + myOutput);
   console.log("stderr: " + myError);
   //const jobContext = JSON.parse(core.getInput('JOB_CONTEXT'));
