@@ -16,7 +16,17 @@ const exec = require('@actions/exec');
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('running env');
-        yield exec.exec('env');
+        let myOutput = '';
+        let myError = '';
+        const options = { listeners: {
+                stdout: (data) => {
+                    myOutput += data.toString();
+                },
+                stderr: (data) => {
+                    myError += data.toString();
+                }
+            } };
+        yield exec.exec('env', options);
         console.log('fetching GITHUB_SHA');
         const foo = core.getInput('GITHUB_SHA');
         console.log(foo);
