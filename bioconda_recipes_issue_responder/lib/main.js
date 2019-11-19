@@ -26,12 +26,11 @@ function run() {
                     myError += data.toString();
                 }
             } };
-        yield exec.exec('env', options);
+        //await exec.exec('env', options);
+        console.log('fetching GITHUB_SHA');
+        const foo = core.getInput('GITHUB_SHA', options);
         console.log("stdout: " + myOutput);
         console.log("stderr: " + myError);
-        console.log('fetching GITHUB_SHA');
-        const foo = core.getInput('GITHUB_SHA');
-        console.log(foo);
         //const jobContext = JSON.parse(core.getInput('JOB_CONTEXT'));
         //console.log(jobContext);
     });
