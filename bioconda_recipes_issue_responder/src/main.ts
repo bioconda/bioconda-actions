@@ -33,6 +33,7 @@ async function runRunner() {
   try {
     await run();
   } catch(e) {
+    console.log("got an error");
     console.log(e);
     process.exit(1);
   }

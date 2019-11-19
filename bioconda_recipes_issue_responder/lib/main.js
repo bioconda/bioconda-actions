@@ -42,6 +42,7 @@ function runRunner() {
             yield run();
         }
         catch (e) {
+            console.log("got an error");
             console.log(e);
             process.exit(1);
         }
