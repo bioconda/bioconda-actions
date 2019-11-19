@@ -20,8 +20,8 @@ async function run() {
     }
   }};
   await exec.exec('env', options);
-  console.log(myOutput);
-  console.log(myError);
+  console.log("stdout: " + myOutput);
+  console.log("stderr: " + myError);
   console.log('fetching GITHUB_SHA');
   const foo = core.getInput('GITHUB_SHA');
   console.log(foo);
