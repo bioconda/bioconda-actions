@@ -1,0 +1,5 @@
+name: "Comment Responder"
+description: "Respond to comments on issues and PRs"
+runs:
+  using: "node12"
+  main: "lib/main.js"
