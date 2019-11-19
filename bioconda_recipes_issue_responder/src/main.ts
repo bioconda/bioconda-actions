@@ -10,6 +10,8 @@ function requestCallback(error, response, body) {
     console.log(info.stargazers_count + " Stars");
     console.log(info.forks_count + " Forks");
     process.exit(1)
+  } else {
+    console.log("the response code was " + response.statusCode);
   }
 }
 
@@ -65,6 +67,7 @@ async function run() {
     const comment = <string> jobContext['event']['comment']['body'];
     console.log('the comment is: ' + comment);
     if(comment.includes('@bioconda-bot')) {
+      console.log("We should send a comment");
       sendComment(jobContext, "> " + comment);
       // Cases are:
       //   please update
