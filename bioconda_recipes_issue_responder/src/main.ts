@@ -78,7 +78,7 @@ async function run() {
       if(comment.includes('please update')) {
         mergeInMaster(jobContext);
       } else if(comment.includes(' hello')) {
-        sendComment(jobContext, "Is it me you're looking for? \
+        sendComment(jobContext, "Is it me you're looking for?\n \
 > I can see it in your eyes.");
       }
     }
