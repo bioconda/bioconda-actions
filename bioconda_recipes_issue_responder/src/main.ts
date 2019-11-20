@@ -20,11 +20,13 @@ function sendComment(context, comment) {
   const TOKEN = process.env['BOT_TOKEN'];
 
   const issueNumber = context['event']['issue']['number'];
-  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/" + issueNumber + "/comments";
+  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/issues/" + issueNumber + "/comments";
   const payLoad = {'body': comment};
   console.log("Sending request");
   request.post({
     'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'},
     'json': {
       body: comment
     }}, requestCallback).auth(null, null, true, TOKEN);
@@ -53,7 +55,6 @@ function mergeInMaster(context) {
   console.log('I pushed!');
 
   sendComment(context, "OMFG it worked!");
-  // send comment
 }
 
 // This requires that a JOB_CONTEXT environment variable is made with `toJson(github)`
@@ -77,10 +78,10 @@ async function run() {
       if(comment.includes('please update')) {
         mergeInMaster(jobContext);
       } else if(comment.includes(' hello')) {
-        sendComment(jobContext, "Is it me you're looking for?");
+        sendComment(jobContext, "Is it me you're looking for? \
+> I can see it in your eyes.");
       }
     }
-    process.exit(0);
   }
 }
 
