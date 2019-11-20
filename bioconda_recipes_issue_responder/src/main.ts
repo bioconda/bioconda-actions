@@ -5,6 +5,7 @@ const request = require('request');
 // const fs = require('fs');
 
 function requestCallback(error, response, body) {
+  console.log("the response code was " + response.statusCode);
   if (!error && response.statusCode == 200) {
     const info = JSON.parse(body);
     console.log(info.stargazers_count + " Stars");
@@ -21,11 +22,13 @@ function sendComment(context, comment) {
   const issueNumber = context['event']['issue']['number'];
   const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/" + issueNumber + "/comments";
   const payLoad = {'body': comment};
+  console.log("Sending request");
   request.post({
     'url': URL,
     'json': {
       body: comment
     }}, requestCallback).auth(null, null, true, TOKEN);
+  console.log("Request sent");
 }
 
 function mergeInMaster(context) {
@@ -68,12 +71,13 @@ async function run() {
     console.log('the comment is: ' + comment);
     if(comment.includes('@bioconda-bot')) {
       console.log("We should send a comment");
-      sendComment(jobContext, "> " + comment);
       // Cases are:
       //   please update
       //   please merge
       if(comment.includes('please update')) {
         mergeInMaster(jobContext);
+      } else if(comment.includes(' hello')) {
+        sendComment(jobContext, "Is it me you're looking for?");
       }
     }
     process.exit(0);
