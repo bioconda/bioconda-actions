@@ -238,20 +238,25 @@ function getPRInfo(PR) {
 // Update a branch from upstream master, this should be run in a try/catch
 function updateFromMasterRunner(PR) {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log("fetching PR info for " + PR);
         var PRInfo = yield getPRInfo(PR);
         var remoteBranch = PRInfo['head']['ref']; // Remote branch
         var remoteRepo = PRInfo['head']['repo']['full_name']; // Remote repo
         // Clone
+        console.log("git clone");
         yield exec.exec("git", ["clone", "git@github.com:" + remoteRepo + ".git"]);
         process.chdir('bioconda-recipes');
         // Add/pull upstream
+        console.log("git pull upstream");
         yield exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
         yield exec.exec("git", ["pull", "brmaster", "master"]);
         // Merge
+        console.log("git merge");
         if (remoteBranch != "master") { // The pull will likely have failed already
             yield exec.exec("git", ["checkout", remoteBranch]);
             yield exec.exec("git", ["merge", "master"]);
         }
+        console.log("git push");
         yield exec.exec("git", ["push"]);
     });
 }
@@ -260,8 +265,10 @@ function updateFromMaster(PR) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield updateFromMasterRunner(PR);
+            console.log("apparently it completed");
         }
         catch (e) {
+            console.log("Failure on PR " + PR);
             yield sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
         }
     });
