@@ -233,7 +233,7 @@ function commentReposter(user, PR, s) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!(yield isBiocondaMember(user))) {
             console.log("Reposting for " + user);
-            yield sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n" + s);
+            yield sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n\n> " + s);
         }
         else {
             console.log("Not reposting for " + user);
