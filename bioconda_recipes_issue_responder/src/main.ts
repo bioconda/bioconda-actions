@@ -45,11 +45,11 @@ async function fetchArtifacts(ID) {
 
   const URL = "https://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
   console.log("contacting circleci " + URL);
-  await req.get({
+  await request.get({
     'url': URL,
     }, function(e, r, b) {
       rc += r.responseCode;
-       console.log("internally circleci returned " + b);
+      console.log("internally circleci returned " + b);
       res += b });
   console.log("return code is " + rc + " with content " + res + " of length " + res.length);
 
@@ -235,7 +235,6 @@ async function run() {
     console.log('the comment is: ' + comment);
 
     if(comment.startsWith('@bioconda-bot')) {
-      console.log("We should send a comment");
       // Cases are:
       //   please update
       //   please merge
