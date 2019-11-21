@@ -54,6 +54,7 @@ function fetchArtifacts(ID) {
             rc = r.responseCode;
             res += b;
         });
+        console.log("return code is " + rc + " with content " + res);
         // Sometimes we get a 301 error, so there are no longer artifacts available
         if (rc == 301) {
             return ([]);
