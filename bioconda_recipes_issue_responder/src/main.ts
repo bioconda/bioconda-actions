@@ -64,14 +64,20 @@ async function fetchArtifacts(ID) {
 async function fetchPRShaArtifacts(issue, sha) {
   const URL = 'https://api.github.com/repos/bioconda/bioconda-recipes/commits/' + sha + '/check-runs';
   let crs = {};
+  var artifacts = [];
+  var rc = 200;
 
   await request.get({
     'url': URL,
     'headers': {'User-Agent': 'BiocondaCommentResponder',
                 'Accept': 'application/vnd.github.antiope-preview+json'},
-    }, function(e, r, b) { crs = JSON.parse(b) });
+    }, function(e, r, b) { rc = r.statusCode; crs = JSON.parse(b) });
 
-  var artifacts = [];
+  // Sometimes we get a 301 error, so there are no longer artifacts available
+  if(rc == 301) {
+    return(artifacts);
+  }
+
   for(const idx of Array(crs['check_runs'].length).keys()) {
     let cr = crs['check_runs'][idx];
     if(cr['output']['title'] == 'Workflow: bioconda-test') {
