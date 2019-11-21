@@ -54,6 +54,7 @@ async function fetchArtifacts(ID) {
   res = res.replace(/:path/g, "\"path\":");
   res = res.replace(/:pretty-path/g, "\"pretty-path\":");
   res = res.replace(/:url/g, "\"url\":");
+  console.log("final JSON is: " + res);
   let artifacts = JSON.parse(res).filter(x => x['url'].endsWith(".tar.gz") || x['url'].endsWith(".tar.bz2") || x['url'].endsWith("/repodata.json")).map(x => x['url']);
   return(artifacts);
 }
