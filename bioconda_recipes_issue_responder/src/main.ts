@@ -63,7 +63,6 @@ async function fetchArtifacts(ID) {
   res = res.replace(/:path/g, "\"path\":");
   res = res.replace(/:pretty-path/g, "\"pretty-path\":");
   res = res.replace(/:url/g, "\"url\":");
-  console.log("final JSON is: " + res);
   let artifacts = JSON.parse(res).filter(x => x['url'].endsWith(".tar.gz") || x['url'].endsWith(".tar.bz2") || x['url'].endsWith("/repodata.json")).map(x => x['url']);
   return(artifacts);
 }
@@ -170,7 +169,8 @@ async function makeArtifactComment(PR, sha) {
     await sendComment(PR, comment);
 
   } else {
-    await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped.");
+    console.log("No packages");
+    //await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
   }
 }
 
@@ -244,6 +244,7 @@ async function run() {
         await sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");
       } else if(comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
         await artifactChecker(issueNumber);
+        process.exit(1);
       }
     }
   }

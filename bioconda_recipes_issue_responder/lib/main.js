@@ -65,7 +65,6 @@ function fetchArtifacts(ID) {
         res = res.replace(/:path/g, "\"path\":");
         res = res.replace(/:pretty-path/g, "\"pretty-path\":");
         res = res.replace(/:url/g, "\"url\":");
-        console.log("final JSON is: " + res);
         let artifacts = JSON.parse(res).filter(x => x['url'].endsWith(".tar.gz") || x['url'].endsWith(".tar.bz2") || x['url'].endsWith("/repodata.json")).map(x => x['url']);
         return (artifacts);
     });
@@ -167,7 +166,8 @@ function makeArtifactComment(PR, sha) {
             yield sendComment(PR, comment);
         }
         else {
-            yield sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped.");
+            console.log("No packages");
+            //await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
         }
     });
 }
@@ -235,6 +235,7 @@ function run() {
                 }
                 else if (comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
                     yield artifactChecker(issueNumber);
+                    process.exit(1);
                 }
             }
         }
