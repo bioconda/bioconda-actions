@@ -239,7 +239,6 @@ async function run() {
         await sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");
       } else if(comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
         await artifactChecker(issueNumber);
-        process.exit(1);
       }
     }
   }
