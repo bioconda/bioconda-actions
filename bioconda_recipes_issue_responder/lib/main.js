@@ -48,7 +48,7 @@ function fetchArtifacts(ID) {
         let rc = 0;
         const URL = "https://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
         console.log("contacting circleci " + URL);
-        yield req.get({
+        yield request.get({
             'url': URL,
         }, function (e, r, b) {
             rc += r.responseCode;
@@ -224,7 +224,6 @@ function run() {
             const comment = jobContext['event']['comment']['body'];
             console.log('the comment is: ' + comment);
             if (comment.startsWith('@bioconda-bot')) {
-                console.log("We should send a comment");
                 // Cases are:
                 //   please update
                 //   please merge
