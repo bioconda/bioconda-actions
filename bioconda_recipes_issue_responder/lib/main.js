@@ -46,7 +46,7 @@ function fetchArtifacts(ID) {
     return __awaiter(this, void 0, void 0, function* () {
         let res = "";
         let rc = 0;
-        const URL = "http://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
+        const URL = "https://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
         console.log("contacting circleci " + URL);
         yield req.get({
             'url': URL,

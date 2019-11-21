@@ -43,7 +43,7 @@ async function fetchArtifacts(ID) {
   let res = "";
   let rc = 0;
 
-  const URL = "http://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
+  const URL = "https://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
   console.log("contacting circleci " + URL);
   await req.get({
     'url': URL,
