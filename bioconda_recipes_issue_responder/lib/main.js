@@ -52,6 +52,7 @@ function fetchArtifacts(ID) {
             'url': URL,
         }, function (e, r, b) {
             rc += r.responseCode;
+            console.log("internally circleci returned " + b);
             res += b;
         });
         console.log("return code is " + rc + " with content " + res + " of length " + res.length);
