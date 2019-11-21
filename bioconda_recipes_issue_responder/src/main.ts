@@ -41,19 +41,19 @@ function parseCircleCISummary(s) {
 // Given a CircleCI run ID, return a list of its tarball artifacts
 async function fetchArtifacts(ID) {
   let res = "";
-  let rc = 200;
+  let rc = 0;
 
   const URL = "http://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
   console.log("contacting circleci " + URL);
   await req.get({
     'url': URL,
     }, function(e, r, b) {
-      rc = r.responseCode;
+      rc += r.responseCode;
       res += b });
-  console.log("return code is " + rc + " with content " + res);
+  console.log("return code is " + rc + " with content " + res + " of length " + res.length);
 
   // Sometimes we get a 301 error, so there are no longer artifacts available
-  if(rc == 301) {
+  if(rc == 301 || res.length == 0) {
     return([]);
   }
 
