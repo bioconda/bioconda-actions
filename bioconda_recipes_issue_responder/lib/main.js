@@ -209,13 +209,7 @@ function run() {
         const jobContext = JSON.parse(process.env['JOB_CONTEXT']);
         console.log(jobContext);
         if (jobContext['event']['issue']['pull_request'] !== undefined) {
-            console.log('The actor is ' + jobContext['actor']);
-            if (jobContext['actor'] != 'dpryan79') {
-                console.log('skipping');
-                process.exit(0);
-            }
             const issueNumber = jobContext['event']['issue']['number'];
-            console.log('The comment is ' + jobContext['event']['comment']);
             const comment = jobContext['event']['comment']['body'];
             console.log('the comment is: ' + comment);
             if (comment.startsWith('@bioconda-bot')) {
@@ -230,6 +224,12 @@ function run() {
                 }
                 else if (comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
                     yield artifactChecker(issueNumber);
+                    // Methods in development can go below, flanked by checking who is running them
+                    //} else {
+                    //if(jobContext['actor'] != 'dpryan79') {
+                    //  console.log('skipping');
+                    //  process.exit(0);
+                    //}
                 }
             }
         }

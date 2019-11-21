@@ -217,15 +217,8 @@ async function run() {
   const jobContext = JSON.parse(<string> process.env['JOB_CONTEXT']);
   console.log(jobContext);
   if(jobContext['event']['issue']['pull_request'] !== undefined) {
-    console.log('The actor is ' + jobContext['actor']);
-    if(jobContext['actor'] != 'dpryan79') {
-      console.log('skipping');
-      process.exit(0);
-    }
-
     const issueNumber = jobContext['event']['issue']['number'];
 
-    console.log('The comment is ' + jobContext['event']['comment']);
     const comment = <string> jobContext['event']['comment']['body'];
     console.log('the comment is: ' + comment);
 
@@ -239,6 +232,12 @@ async function run() {
         await sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");
       } else if(comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
         await artifactChecker(issueNumber);
+      // Methods in development can go below, flanked by checking who is running them
+      //} else {
+        //if(jobContext['actor'] != 'dpryan79') {
+        //  console.log('skipping');
+        //  process.exit(0);
+        //}
       }
     }
   }
