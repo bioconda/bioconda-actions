@@ -45,13 +45,19 @@ function parseCircleCISummary(s) {
 function fetchArtifacts(ID) {
     return __awaiter(this, void 0, void 0, function* () {
         let res = "";
+        let rc = 200;
         const URL = "http://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
         console.log("contacting circleci " + URL);
         yield req.get({
             'url': URL,
         }, function (e, r, b) {
+            rc = r.responseCode;
             res += b;
         });
+        // Sometimes we get a 301 error, so there are no longer artifacts available
+        if (rc == 301) {
+            return ([]);
+        }
         res = res.replace("(", "[").replace(")", "]");
         res = res.replace(/} /g, "}, ");
         res = res.replace(/:node-index/g, "\"node-index\":");
@@ -69,16 +75,11 @@ function fetchPRShaArtifacts(issue, sha) {
         const URL = 'https://api.github.com/repos/bioconda/bioconda-recipes/commits/' + sha + '/check-runs';
         let crs = {};
         var artifacts = [];
-        var rc = 200;
         yield request.get({
             'url': URL,
             'headers': { 'User-Agent': 'BiocondaCommentResponder',
                 'Accept': 'application/vnd.github.antiope-preview+json' },
-        }, function (e, r, b) { rc = r.statusCode; crs = JSON.parse(b); });
-        // Sometimes we get a 301 error, so there are no longer artifacts available
-        if (rc == 301) {
-            return (artifacts);
-        }
+        }, function (e, r, b) { crs = JSON.parse(b); });
         for (const idx of Array(crs['check_runs'].length).keys()) {
             let cr = crs['check_runs'][idx];
             if (cr['output']['title'] == 'Workflow: bioconda-test') {
