@@ -183,8 +183,45 @@ async function artifactChecker() {
 }
 
 
+// Return true if the user is a member of bioconda
+async function isBiocondaMember(user) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  const URL = "https://api.github.com/orgs/bioconda/members/" + user;
+  var rv = 404;
+  try{
+  await request.get({
+    'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'}
+    }, function(e, r, b) {
+      rv = r.statusCode;
+      console.log("I got called rv " + rv);
+    });
+  } catch(e) {
+    // Do nothing, this just prevents things from crashing on 404
+  }
+
+  if(rv == 204) {
+    return(true);
+  }
+  return(false);
+}
+
+
+async function commentReposter(user, PR, s) {
+  if(!await isBiocondaMember(user)) {
+    console.log("Would repost for " + user);
+    //await sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n" + s);
+  } else {
+    console.log("Would not repost for " + user);
+  }
+}
+
+
 async function runner() {
-  await artifactChecker();
+  //await artifactChecker();
+  await commentReposter('dpryan79', 18794, "some text");
+  await commentReposter('Juke34', 18794, "some text");
 }
 
 test('test artifacts', runner);

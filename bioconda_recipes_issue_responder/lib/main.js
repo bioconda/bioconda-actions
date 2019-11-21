@@ -42,18 +42,18 @@ function parseCircleCISummary(s) {
 function fetchArtifacts(ID) {
     return __awaiter(this, void 0, void 0, function* () {
         let res = "";
-        let rc = "";
+        let rc = 0;
         const URL = "https://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
         console.log("contacting circleci " + URL);
         yield request.get({
             'url': URL,
         }, function (e, r, b) {
-            rc += r.responseCode;
+            rc = r.statusCode;
             res += b;
         });
         // Sometimes we get a 301 error, so there are no longer artifacts available
-        console.log("response code was " + rc);
-        if (rc == "301" || res.length < 3) {
+        console.log("status code was " + rc);
+        if (rc == 301 || res.length < 3) {
             return ([]);
         }
         res = res.replace("(", "[").replace(")", "]");
@@ -203,6 +203,43 @@ function mergeInMaster(context) {
     const issueNumber = context['event']['issue']['number'];
     sendComment(issueNumber, "OMFG it worked!");
 }
+// Return true if a user is a member of bioconda
+function isBiocondaMember(user) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['BOT_TOKEN'];
+        const URL = "https://api.github.com/orgs/bioconda/members/" + user;
+        var rv = 404;
+        try {
+            yield request.get({
+                'url': URL,
+                'headers': { 'Authorization': 'token ' + TOKEN,
+                    'User-Agent': 'BiocondaCommentResponder' }
+            }, function (e, r, b) {
+                rv = r.statusCode;
+                console.log("I got called rv " + rv);
+            });
+        }
+        catch (e) {
+            // Do nothing, this just prevents things from crashing on 404
+        }
+        if (rv == 204) {
+            return (true);
+        }
+        return (false);
+    });
+}
+// Reposts a quoted message in a given issue/PR if the user isn't a bioconda member
+function commentReposter(user, PR, s) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!(yield isBiocondaMember(user))) {
+            console.log("Reposting for " + user);
+            yield sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n" + s);
+        }
+        else {
+            console.log("Not repostint for " + user);
+        }
+    });
+}
 // This requires that a JOB_CONTEXT environment variable, which is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -213,7 +250,7 @@ function run() {
             const comment = jobContext['event']['comment']['body'];
             console.log('the comment is: ' + comment);
             if (comment.startsWith('@bioconda-bot')) {
-                // Cases are:
+                // Cases that need to be implemented are:
                 //   please update
                 //   please merge
                 if (comment.includes('please update')) {
@@ -224,13 +261,16 @@ function run() {
                 }
                 else if (comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
                     yield artifactChecker(issueNumber);
-                    // Methods in development can go below, flanked by checking who is running them
                     //} else {
+                    // Methods in development can go below, flanked by checking who is running them
                     //if(jobContext['actor'] != 'dpryan79') {
                     //  console.log('skipping');
                     //  process.exit(0);
                     //}
                 }
+            }
+            else {
+                yield commentReposter(jobContext['actor'], issueNumber, comment);
             }
         }
     });
