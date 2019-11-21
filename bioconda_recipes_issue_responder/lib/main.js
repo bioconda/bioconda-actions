@@ -230,7 +230,6 @@ function run() {
                 }
                 else if (comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
                     yield artifactChecker(issueNumber);
-                    process.exit(1);
                 }
             }
         }
