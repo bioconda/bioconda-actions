@@ -244,7 +244,7 @@ async function commentReposter(user, PR, s) {
     console.log("Reposting for " + user);
     await sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n" + s);
   } else {
-    console.log("Not repostint for " + user);
+    console.log("Not reposting for " + user);
   }
 }
 
@@ -276,7 +276,7 @@ async function run() {
         //  process.exit(0);
         //}
       }
-    } else {
+    } else if(comment.includes('@bioconda/')) {
       await commentReposter(jobContext['actor'], issueNumber, comment);
     }
   }

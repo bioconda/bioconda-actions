@@ -236,7 +236,7 @@ function commentReposter(user, PR, s) {
             yield sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n" + s);
         }
         else {
-            console.log("Not repostint for " + user);
+            console.log("Not reposting for " + user);
         }
     });
 }
@@ -269,7 +269,7 @@ function run() {
                     //}
                 }
             }
-            else {
+            else if (comment.includes('@bioconda/')) {
                 yield commentReposter(jobContext['actor'], issueNumber, comment);
             }
         }
