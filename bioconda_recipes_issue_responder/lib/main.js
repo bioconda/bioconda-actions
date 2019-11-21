@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const request = require('request-promise-native');
-const req = require('request');
 function requestCallback(error, response, body) {
     console.log("the response code was " + response.statusCode);
     if (error || response.statusCode < 200 || response.statusCode > 202) {
@@ -22,7 +21,6 @@ function sendComment(issueNumber, s) {
     return __awaiter(this, void 0, void 0, function* () {
         const TOKEN = process.env['BOT_TOKEN'];
         const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/issues/" + issueNumber + "/comments";
-        console.log("Sending request");
         yield request.post({
             'url': URL,
             'headers': { 'Authorization': 'token ' + TOKEN,
@@ -31,7 +29,6 @@ function sendComment(issueNumber, s) {
                 body: s
             }
         }, requestCallback);
-        console.log("Request sent");
     });
 }
 // Parse the summary string returned by github to get the CircleCI run ID
@@ -45,19 +42,18 @@ function parseCircleCISummary(s) {
 function fetchArtifacts(ID) {
     return __awaiter(this, void 0, void 0, function* () {
         let res = "";
-        let rc = 0;
+        let rc = "";
         const URL = "https://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
         console.log("contacting circleci " + URL);
         yield request.get({
             'url': URL,
         }, function (e, r, b) {
             rc += r.responseCode;
-            console.log("internally circleci returned " + b);
             res += b;
         });
-        console.log("return code is " + rc + " with content " + res + " of length " + res.length);
         // Sometimes we get a 301 error, so there are no longer artifacts available
-        if (rc == 301 || res.length == 0) {
+        console.log("response code was " + rc);
+        if (rc == "301" || res.length < 3) {
             return ([]);
         }
         res = res.replace("(", "[").replace(")", "]");
@@ -94,7 +90,6 @@ function fetchPRShaArtifacts(issue, sha) {
             }
         }
         ;
-        console.log("Final artifact URLs: " + artifacts + "The length is " + artifacts.length);
         return (artifacts);
     });
 }
@@ -168,7 +163,7 @@ function makeArtifactComment(PR, sha) {
         }
         else {
             console.log("No packages");
-            //await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
+            yield sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
         }
     });
 }

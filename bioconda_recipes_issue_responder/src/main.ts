@@ -1,7 +1,6 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const request = require('request-promise-native');
-const req = require('request');
 
 
 function requestCallback(error, response, body) {
@@ -17,7 +16,6 @@ async function sendComment(issueNumber, s) {
   const TOKEN = process.env['BOT_TOKEN'];
 
   const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/issues/" + issueNumber + "/comments";
-  console.log("Sending request");
   await request.post({
     'url': URL,
     'headers': {'Authorization': 'token ' + TOKEN,
@@ -25,7 +23,6 @@ async function sendComment(issueNumber, s) {
     'json': {
       body: s
     }}, requestCallback);
-  console.log("Request sent");
 }
 
 
@@ -41,7 +38,7 @@ function parseCircleCISummary(s) {
 // Given a CircleCI run ID, return a list of its tarball artifacts
 async function fetchArtifacts(ID) {
   let res = "";
-  let rc = 0;
+  let rc = "";
 
   const URL = "https://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
   console.log("contacting circleci " + URL);
@@ -49,12 +46,11 @@ async function fetchArtifacts(ID) {
     'url': URL,
     }, function(e, r, b) {
       rc += r.responseCode;
-      console.log("internally circleci returned " + b);
       res += b });
-  console.log("return code is " + rc + " with content " + res + " of length " + res.length);
 
   // Sometimes we get a 301 error, so there are no longer artifacts available
-  if(rc == 301 || res.length == 0) {
+  console.log("response code was " + rc);
+  if(rc == "301" || res.length < 3) {
     return([]);
   }
 
@@ -93,7 +89,6 @@ async function fetchPRShaArtifacts(issue, sha) {
       }
     }
   };
-  console.log("Final artifact URLs: " + artifacts + "The length is " + artifacts.length);
   return(artifacts);
 }
 
@@ -171,7 +166,7 @@ async function makeArtifactComment(PR, sha) {
 
   } else {
     console.log("No packages");
-    //await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
+    await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
   }
 }
 
