@@ -1,5 +1,5 @@
 {
-  "name": "bioconda_utils_setup_conda",
+  "name": "bioconda_recipes_issue_responder",
   "version": "0.0.0",
   "private": true,
   "description": "Node 12 template action",
@@ -22,7 +22,12 @@
   "dependencies": {
     "@actions/core": "^1.0.0",
     "@actions/exec": "^1.0.1",
-    "@actions/tool-cache": "^1.1.1"
+    "@actions/tool-cache": "^1.1.1",
+    "circleci-api": "^4.0.0",
+    "fs": "0.0.1-security",
+    "process": "^0.11.10",
+    "request": "",
+    "request-promise-native": "^1.0.8"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
