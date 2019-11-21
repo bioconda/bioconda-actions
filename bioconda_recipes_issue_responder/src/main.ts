@@ -287,7 +287,7 @@ async function run() {
   const jobContext = JSON.parse(<string> process.env['JOB_CONTEXT']);
   console.log(jobContext);
   if(jobContext['event']['issue']['pull_request'] !== undefined) {
-    const issueNumber = jobContext['event']['issue']['number'];
+    const issueNumber = <string> jobContext['event']['issue']['number'];
 
     const comment = <string> jobContext['event']['comment']['body'];
     console.log('the comment is: ' + comment);
@@ -297,7 +297,7 @@ async function run() {
       //   please update
       //   please merge
       if(comment.includes('please update') && jobContext['actor'] == 'dpryan79') {
-        updateFromMaster(jobContext);
+        updateFromMaster(issueNumber);
       } else if(comment.includes(' hello')) {
         await sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");
       } else if(comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {

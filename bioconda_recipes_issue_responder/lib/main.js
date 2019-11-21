@@ -287,7 +287,7 @@ function run() {
                 //   please update
                 //   please merge
                 if (comment.includes('please update') && jobContext['actor'] == 'dpryan79') {
-                    updateFromMaster(jobContext);
+                    updateFromMaster(issueNumber);
                 }
                 else if (comment.includes(' hello')) {
                     yield sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");
