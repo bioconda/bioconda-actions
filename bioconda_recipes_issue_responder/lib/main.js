@@ -181,28 +181,6 @@ function artifactChecker(issueNumber) {
         yield makeArtifactComment(issueNumber, PRinfo['head']['sha']);
     });
 }
-// This is currently non-functional
-function mergeInMaster(context) {
-    const TOKEN = process.env['BOT_TOKEN'];
-    let branch = '';
-    const options = { listeners: {
-            stdout: (data) => {
-                branch += data.toString();
-            },
-        } };
-    exec.exec('git branch | grep \*', options);
-    console.log('The branch is ' + branch.split(" ")[1]);
-    exec.exec('git', ['remote', 'add', 'upstream', 'https://github.com/bioconda/bioconda-recipes']);
-    exec.exec('git', ['checkout', 'master']);
-    exec.exec('git', ['pull', 'upstream', 'master']);
-    exec.exec('git', ['checkout', branch]);
-    exec.exec('git', ['merge', 'master']);
-    console.log('Going to push');
-    exec.exec('git', ['push']);
-    console.log('I pushed!');
-    const issueNumber = context['event']['issue']['number'];
-    sendComment(issueNumber, "OMFG it worked!");
-}
 // Return true if a user is a member of bioconda
 function isBiocondaMember(user) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -240,6 +218,54 @@ function commentReposter(user, PR, s) {
         }
     });
 }
+// Fetch and return the JSON of a PR
+// This can be run to trigger a test merge
+function getPRInfo(PR) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['BOT_TOKEN'];
+        const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR;
+        let res = {};
+        yield request.get({
+            'url': URL,
+            'headers': { 'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder' }
+        }, function (e, r, b) {
+            res = JSON.parse(b);
+        });
+        return res;
+    });
+}
+// Update a branch from upstream master, this should be run in a try/catch
+function updateFromMasterRunner(PR) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var PRInfo = yield getPRInfo(PR);
+        var remoteBranch = PRInfo['head']['ref']; // Remote branch
+        var remoteRepo = PRInfo['head']['repo']['full_name']; // Remote repo
+        // Clone
+        yield exec.exec("git", ["clone", "git@github.com:" + remoteRepo + ".git"]);
+        process.chdir('bioconda-recipes');
+        // Add/pull upstream
+        yield exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
+        yield exec.exec("git", ["pull", "brmaster", "master"]);
+        // Merge
+        if (remoteBranch != "master") { // The pull will likely have failed already
+            yield exec.exec("git", ["checkout", remoteBranch]);
+            yield exec.exec("git", ["merge", "master"]);
+        }
+        yield exec.exec("git", ["push"]);
+    });
+}
+// Merge the upstream master branch into a PR branch, leave a message on error
+function updateFromMaster(PR) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield updateFromMasterRunner(PR);
+        }
+        catch (e) {
+            yield sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
+        }
+    });
+}
 // This requires that a JOB_CONTEXT environment variable, which is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -253,8 +279,8 @@ function run() {
                 // Cases that need to be implemented are:
                 //   please update
                 //   please merge
-                if (comment.includes('please update')) {
-                    mergeInMaster(jobContext);
+                if (comment.includes('please update') && jobContext['actor'] == 'dpryan79') {
+                    updateFromMaster(jobContext);
                 }
                 else if (comment.includes(' hello')) {
                     yield sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");

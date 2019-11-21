@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const request = require('request-promise-native');
 const req = require('request');
+const gh = require('nodegit');
 
 
 function requestCallback(error, response, body) {
@@ -218,10 +219,81 @@ async function commentReposter(user, PR, s) {
 }
 
 
+async function hasBeenMerged(PR) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
+  let rv = 0;
+
+  try {
+  await request.get({
+    'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'}
+    }, function(e, r, b) {
+      rv = r.statusCode;
+    });
+  } catch(e) {
+    // Do nothing, this just prevents things from crashing on 404
+  }
+
+  console.log("For PR " + PR + " the merged status is " + rv);
+  if(rv == 204) {
+    return(true);
+  }
+  return(false);
+}
+
+
+// Fetch and return the JSON of a PR
+async function getPRInfo(PR) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR;
+
+  let res = {};
+  await request.get({
+    'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'}
+    }, function(e, r, b) {
+        res = JSON.parse(b);
+    });
+
+  return res;
+}
+
+async function updateFromMaster(PR) {
+  var PRInfo = await getPRInfo(PR); 
+  // Remote branch
+  var remoteBranch = PRInfo['head']['ref'];
+  // Remote repo
+  var remoteRepo = PRInfo['head']['repo']['full_name'];
+
+  // Clone
+  await exec.exec("git", ["clone", "git@github.com:" + remoteRepo + ".git"]);
+  process.chdir('bioconda-recipes');
+
+  // Add/pull upstream
+  await exec.exec("git", ["remote", "add", "bhmaster", "https://github.com/bioconda/bioconda-recipes"]);
+  await exec.exec("git", ["pull", "bhmaster", "master"]);
+
+  // Merge it!
+  if(remoteBranch != "master") {  // The pull will likely have failed already
+    await exec.exec("git", ["checkout", remoteBranch]);
+    await exec.exec("git", ["merge", "master"]);
+  }
+
+  // Push it
+  await exec.exec("git", ["push"]);
+}
+
+
 async function runner() {
   //await artifactChecker();
-  await commentReposter('dpryan79', 18794, "some text");
-  await commentReposter('Juke34', 18794, "some text");
+  //await commentReposter('dpryan79', 18794, "some text");
+  //await commentReposter('Juke34', 18794, "some text");
+  //await hasBeenMerged(18829);
+  //await hasBeenMerged(18811);
+  //await updateFromMaster(); // This should be in a try/catch
 }
 
 test('test artifacts', runner);

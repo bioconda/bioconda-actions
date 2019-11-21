@@ -186,33 +186,6 @@ async function artifactChecker(issueNumber) {
 }
 
 
-// This is currently non-functional
-function mergeInMaster(context) {
-  const TOKEN = process.env['BOT_TOKEN'];
-
-  let branch = '';
-  const options = {listeners: {
-    stdout: (data: Buffer) => {
-      branch += data.toString();
-    },
-  }};
-  exec.exec('git branch | grep \*', options);
-  console.log('The branch is ' + branch.split(" ")[1]);
-  exec.exec('git', ['remote', 'add', 'upstream', 'https://github.com/bioconda/bioconda-recipes']);
-  exec.exec('git', ['checkout', 'master']);
-  exec.exec('git', ['pull', 'upstream', 'master']);
-  exec.exec('git', ['checkout', branch]);
-  exec.exec('git', ['merge', 'master']);
-
-  console.log('Going to push');
-  exec.exec('git', ['push']);
-  console.log('I pushed!');
-
-  const issueNumber = context['event']['issue']['number'];
-  sendComment(issueNumber, "OMFG it worked!");
-}
-
-
 // Return true if a user is a member of bioconda
 async function isBiocondaMember(user) {
   const TOKEN = process.env['BOT_TOKEN'];
@@ -249,6 +222,59 @@ async function commentReposter(user, PR, s) {
 }
 
 
+// Fetch and return the JSON of a PR
+// This can be run to trigger a test merge
+async function getPRInfo(PR) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR;
+
+  let res = {};
+  await request.get({
+    'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'}
+    }, function(e, r, b) {
+        res = JSON.parse(b);
+    });
+
+  return res;
+}
+
+
+// Update a branch from upstream master, this should be run in a try/catch
+async function updateFromMasterRunner(PR) {
+  var PRInfo = await getPRInfo(PR);
+  var remoteBranch = PRInfo['head']['ref'];  // Remote branch
+  var remoteRepo = PRInfo['head']['repo']['full_name'];  // Remote repo
+
+  // Clone
+  await exec.exec("git", ["clone", "git@github.com:" + remoteRepo + ".git"]);
+  process.chdir('bioconda-recipes');
+
+  // Add/pull upstream
+  await exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
+  await exec.exec("git", ["pull", "brmaster", "master"]);
+
+  // Merge
+  if(remoteBranch != "master") {  // The pull will likely have failed already
+    await exec.exec("git", ["checkout", remoteBranch]);
+    await exec.exec("git", ["merge", "master"]);
+  }
+
+  await exec.exec("git", ["push"]);
+}
+
+
+// Merge the upstream master branch into a PR branch, leave a message on error
+async function updateFromMaster(PR) {
+  try {
+    await updateFromMasterRunner(PR);
+  } catch(e) {
+    await sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
+  }
+}
+
+
 // This requires that a JOB_CONTEXT environment variable, which is made with `toJson(github)`
 async function run() {
   const jobContext = JSON.parse(<string> process.env['JOB_CONTEXT']);
@@ -263,8 +289,8 @@ async function run() {
       // Cases that need to be implemented are:
       //   please update
       //   please merge
-      if(comment.includes('please update')) {
-        mergeInMaster(jobContext);
+      if(comment.includes('please update') && jobContext['actor'] == 'dpryan79') {
+        updateFromMaster(jobContext);
       } else if(comment.includes(' hello')) {
         await sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");
       } else if(comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
@@ -281,6 +307,7 @@ async function run() {
     }
   }
 }
+
 
 async function runRunner() {
   try {
