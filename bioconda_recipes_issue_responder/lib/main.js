@@ -238,6 +238,11 @@ function getPRInfo(PR) {
 // Update a branch from upstream master, this should be run in a try/catch
 function updateFromMasterRunner(PR) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Debug, check for gpg
+        console.log("importing gpg key");
+        yield exec.exec("cat $CODE_SIGNING_KEY | gpg --import");
+        console.log("running gpg --list-keys");
+        yield exec.exec("gpg", ["--list-keys"]);
         console.log("fetching PR info for " + PR);
         var PRInfo = yield getPRInfo(PR);
         var remoteBranch = PRInfo['head']['ref']; // Remote branch
@@ -251,9 +256,6 @@ function updateFromMasterRunner(PR) {
         console.log("git pull upstream");
         yield exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
         yield exec.exec("git", ["pull", "brmaster", "master"]);
-        // Debug, check for gpg
-        console.log("running gpg --list-keys");
-        yield exec.exec("gpg", ["--list-keys"]);
         // Merge
         console.log("git merge");
         if (remoteBranch != "master") { // The pull will likely have failed already

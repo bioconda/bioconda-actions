@@ -243,6 +243,12 @@ async function getPRInfo(PR) {
 
 // Update a branch from upstream master, this should be run in a try/catch
 async function updateFromMasterRunner(PR) {
+  // Debug, check for gpg
+  console.log("importing gpg key");
+  await exec.exec("cat $CODE_SIGNING_KEY | gpg --import");
+  console.log("running gpg --list-keys");
+  await exec.exec("gpg", ["--list-keys"]);
+
   console.log("fetching PR info for " + PR);
   var PRInfo = await getPRInfo(PR);
   var remoteBranch = PRInfo['head']['ref'];  // Remote branch
@@ -258,10 +264,6 @@ async function updateFromMasterRunner(PR) {
   console.log("git pull upstream");
   await exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
   await exec.exec("git", ["pull", "brmaster", "master"]);
-
-  // Debug, check for gpg
-  console.log("running gpg --list-keys");
-  await exec.exec("gpg", ["--list-keys"]);
 
   // Merge
   console.log("git merge");
