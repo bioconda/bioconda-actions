@@ -241,7 +241,7 @@ function updateFromMasterRunner(PR) {
         // Debug, check for gpg
         console.log("importing gpg key");
         yield exec.exec("gpg --help");
-        yield exec.exec("cat $CODE_SIGNING_KEY | gpg --import");
+        yield exec.exec("gpg --import < cat $CODE_SIGNING_KEY");
         console.log("running gpg --list-keys");
         yield exec.exec("gpg", ["--list-keys"]);
         console.log("fetching PR info for " + PR);
