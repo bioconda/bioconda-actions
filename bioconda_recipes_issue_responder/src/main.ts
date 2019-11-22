@@ -246,7 +246,7 @@ async function updateFromMasterRunner(PR) {
   // Debug, check for gpg
   console.log("importing gpg key");
   await exec.exec("gpg --help");
-  await exec.exec("gpg --import < cat $CODE_SIGNING_KEY");
+  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg --import");
   console.log("running gpg --list-keys");
   await exec.exec("gpg", ["--list-keys"]);
 
