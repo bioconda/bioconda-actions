@@ -245,10 +245,9 @@ async function getPRInfo(PR) {
 async function updateFromMasterRunner(PR) {
   // Debug, check for gpg
   console.log("importing gpg key");
-  await exec.exec("gpg --help");
-  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg --import");
-  console.log("running gpg --list-keys");
   await exec.exec("gpg", ["--list-keys"]);
+  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import");
+  await exec.exec("gpg", ["--list-signatures"]);
 
   console.log("fetching PR info for " + PR);
   var PRInfo = await getPRInfo(PR);
