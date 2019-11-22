@@ -285,7 +285,7 @@ async function updateFromMaster(PR) {
     console.log("apparently it completed");
   } catch(e) {
     console.log("Failure on PR " + PR);
-    await sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
+    //await sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
     process.exit(1);
   }
 }
