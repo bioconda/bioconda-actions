@@ -244,33 +244,37 @@ async function getPRInfo(PR) {
 // Update a branch from upstream master, this should be run in a try/catch
 async function updateFromMasterRunner(PR) {
   // Debug, check for gpg
-  console.log("importing gpg key");
-  let stdout = '';
-  let stderr = '';
-  const options = {listeners: {
-    stdout: (data: Buffer) => {
-      stdout += data.toString();
-    },
-    stderr: (data: Buffer) => {
-      stderr += data.toString();
-    }
-  }};
-  await exec.exec("echo \"$CODE_SIGNING_KEY\" | wc -l", options);
-  console.log("stdout: " + stdout);
-  console.log("stderr: " + stderr);
-  stdout = stderr = "";
-  await exec.exec("gpg", ["--list-keys"], options);
-  console.log("stdout: " + stdout);
-  console.log("stderr: " + stderr);
-  stdout = stderr = "";
-  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import", options);
-  console.log("stdout: " + stdout);
-  console.log("stderr: " + stderr);
-  stdout = stderr = "";
-  await exec.exec("gpg", ["--list-signatures"], options);
-  console.log("stdout: " + stdout);
-  console.log("stderr: " + stderr);
-  stdout = stderr = "";
+//  console.log("importing gpg key");
+//  let stdout = '';
+//  let stderr = '';
+//  const options = {listeners: {
+//    stdout: (data: Buffer) => {
+//      stdout += data.toString();
+//    },
+//    stderr: (data: Buffer) => {
+//      stderr += data.toString();
+//    }
+//  }};
+//  await exec.exec("echo \"$CODE_SIGNING_KEY\" | wc -l", options);
+//  console.log("stdout: " + stdout);
+//  console.log("stderr: " + stderr);
+//  stdout = stderr = "";
+//  await exec.exec("gpg", ["--list-keys"], options);
+//  console.log("stdout: " + stdout);
+//  console.log("stderr: " + stderr);
+//  stdout = stderr = "";
+//  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import", options);
+//  console.log("stdout: " + stdout);
+//  console.log("stderr: " + stderr);
+//  stdout = stderr = "";
+//  await exec.exec("gpg", ["--list-signatures"], options);
+//  console.log("stdout: " + stdout);
+//  console.log("stderr: " + stderr);
+//  stdout = stderr = "";
+
+  // Setup git
+  await exec.exec("git", ["config", "--global", "user.email", "biocondabot@gmail.com"]);
+  await exec.exec("git", ["config", "--global", "user.name", "BiocondaBot"]);
 
   console.log("fetching PR info for " + PR);
   var PRInfo = await getPRInfo(PR);
