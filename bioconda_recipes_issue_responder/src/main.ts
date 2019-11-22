@@ -245,10 +245,32 @@ async function getPRInfo(PR) {
 async function updateFromMasterRunner(PR) {
   // Debug, check for gpg
   console.log("importing gpg key");
-  await exec.exec("echo \"$CODE_SIGNING_KEY\" | wc -l");
-  await exec.exec("gpg", ["--list-keys"]);
-  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import");
-  await exec.exec("gpg", ["--list-signatures"]);
+  let stdout = '';
+  let stderr = '';
+  const options = {listeners: {
+    stdout: (data: Buffer) => {
+      stdout += data.toString();
+    },
+    stderr: (data: Buffer) => {
+      stderr += data.toString();
+    }
+  }};
+  await exec.exec("echo \"$CODE_SIGNING_KEY\" | wc -l", options);
+  console.log("stdout: " + stdout);
+  console.log("stderr: " + stderr);
+  stdout = stderr = "";
+  await exec.exec("gpg", ["--list-keys"], options);
+  console.log("stdout: " + stdout);
+  console.log("stderr: " + stderr);
+  stdout = stderr = "";
+  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import", options);
+  console.log("stdout: " + stdout);
+  console.log("stderr: " + stderr);
+  stdout = stderr = "";
+  await exec.exec("gpg", ["--list-signatures"], options);
+  console.log("stdout: " + stdout);
+  console.log("stderr: " + stderr);
+  stdout = stderr = "";
 
   console.log("fetching PR info for " + PR);
   var PRInfo = await getPRInfo(PR);

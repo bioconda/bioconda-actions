@@ -240,10 +240,32 @@ function updateFromMasterRunner(PR) {
     return __awaiter(this, void 0, void 0, function* () {
         // Debug, check for gpg
         console.log("importing gpg key");
-        yield exec.exec("echo \"$CODE_SIGNING_KEY\" | wc -l");
-        yield exec.exec("gpg", ["--list-keys"]);
-        yield exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import");
-        yield exec.exec("gpg", ["--list-signatures"]);
+        let stdout = '';
+        let stderr = '';
+        const options = { listeners: {
+                stdout: (data) => {
+                    stdout += data.toString();
+                },
+                stderr: (data) => {
+                    stderr += data.toString();
+                }
+            } };
+        yield exec.exec("echo \"$CODE_SIGNING_KEY\" | wc -l", options);
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        stdout = stderr = "";
+        yield exec.exec("gpg", ["--list-keys"], options);
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        stdout = stderr = "";
+        yield exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import", options);
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        stdout = stderr = "";
+        yield exec.exec("gpg", ["--list-signatures"], options);
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        stdout = stderr = "";
         console.log("fetching PR info for " + PR);
         var PRInfo = yield getPRInfo(PR);
         var remoteBranch = PRInfo['head']['ref']; // Remote branch
