@@ -240,7 +240,7 @@ function updateFromMasterRunner(PR) {
     return __awaiter(this, void 0, void 0, function* () {
         // Debug, check for gpg
         console.log("importing gpg key");
-        yield exec.exec("gpg --import");
+        yield exec.exec("gpg --help");
         yield exec.exec("cat $CODE_SIGNING_KEY | gpg --import");
         console.log("running gpg --list-keys");
         yield exec.exec("gpg", ["--list-keys"]);
