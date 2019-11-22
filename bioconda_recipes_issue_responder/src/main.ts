@@ -247,6 +247,7 @@ async function updateFromMasterRunner(PR) {
   var PRInfo = await getPRInfo(PR);
   var remoteBranch = PRInfo['head']['ref'];  // Remote branch
   var remoteRepo = PRInfo['head']['repo']['full_name'];  // Remote repo
+  console.log("remoteBranch " + remoteBranch + " remoteRepo " + remoteRepo);
 
   // Clone
   console.log("git clone");
@@ -257,6 +258,10 @@ async function updateFromMasterRunner(PR) {
   console.log("git pull upstream");
   await exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
   await exec.exec("git", ["pull", "brmaster", "master"]);
+
+  // Debug, check for gpg
+  console.log("running gpg --list-keys");
+  await exec.exec("gpg", ["--list-keys"]);
 
   // Merge
   console.log("git merge");
@@ -278,6 +283,7 @@ async function updateFromMaster(PR) {
   } catch(e) {
     console.log("Failure on PR " + PR);
     await sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
+    process.exit(1);
   }
 }
 
