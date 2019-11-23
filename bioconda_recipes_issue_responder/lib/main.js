@@ -238,42 +238,12 @@ function getPRInfo(PR) {
 // Update a branch from upstream master, this should be run in a try/catch
 function updateFromMasterRunner(PR) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Debug, check for gpg
-        //  console.log("importing gpg key");
-        //  let stdout = '';
-        //  let stderr = '';
-        //  const options = {listeners: {
-        //    stdout: (data: Buffer) => {
-        //      stdout += data.toString();
-        //    },
-        //    stderr: (data: Buffer) => {
-        //      stderr += data.toString();
-        //    }
-        //  }};
-        //  await exec.exec("echo \"$CODE_SIGNING_KEY\" | wc -l", options);
-        //  console.log("stdout: " + stdout);
-        //  console.log("stderr: " + stderr);
-        //  stdout = stderr = "";
-        //  await exec.exec("gpg", ["--list-keys"], options);
-        //  console.log("stdout: " + stdout);
-        //  console.log("stderr: " + stderr);
-        //  stdout = stderr = "";
-        //  await exec.exec("echo \"$CODE_SIGNING_KEY\" | gpg -v --import", options);
-        //  console.log("stdout: " + stdout);
-        //  console.log("stderr: " + stderr);
-        //  stdout = stderr = "";
-        //  await exec.exec("gpg", ["--list-signatures"], options);
-        //  console.log("stdout: " + stdout);
-        //  console.log("stderr: " + stderr);
-        //  stdout = stderr = "";
-        // Setup git
+        // Setup git, otherwise we can't push
         yield exec.exec("git", ["config", "--global", "user.email", "biocondabot@gmail.com"]);
         yield exec.exec("git", ["config", "--global", "user.name", "BiocondaBot"]);
-        console.log("fetching PR info for " + PR);
         var PRInfo = yield getPRInfo(PR);
         var remoteBranch = PRInfo['head']['ref']; // Remote branch
         var remoteRepo = PRInfo['head']['repo']['full_name']; // Remote repo
-        console.log("remoteBranch " + remoteBranch + " remoteRepo " + remoteRepo);
         // Clone
         console.log("git clone");
         yield exec.exec("git", ["clone", "git@github.com:" + remoteRepo + ".git"]);
@@ -284,10 +254,8 @@ function updateFromMasterRunner(PR) {
         yield exec.exec("git", ["pull", "brmaster", "master"]);
         // Merge
         console.log("git merge");
-        if (remoteBranch != "master") { // The pull will likely have failed already
-            yield exec.exec("git", ["checkout", remoteBranch]);
-            yield exec.exec("git", ["merge", "master"]);
-        }
+        yield exec.exec("git", ["checkout", remoteBranch]);
+        yield exec.exec("git", ["merge", "master"]);
         console.log("git push");
         yield exec.exec("git", ["push"]);
     });
@@ -297,11 +265,9 @@ function updateFromMaster(PR) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield updateFromMasterRunner(PR);
-            console.log("apparently it completed");
         }
         catch (e) {
-            console.log("Failure on PR " + PR);
-            //await sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
+            yield sendComment(PR, "I encountered an error updating your PR branch. You can report this to bioconda/core if you'd like.\n-The Bot");
             process.exit(1);
         }
     });
@@ -317,13 +283,12 @@ function run() {
             console.log('the comment is: ' + comment);
             if (comment.startsWith('@bioconda-bot')) {
                 // Cases that need to be implemented are:
-                //   please update
                 //   please merge
-                if (comment.includes('please update') && jobContext['actor'] == 'dpryan79') {
+                if (comment.includes('please update')) {
                     updateFromMaster(issueNumber);
                 }
                 else if (comment.includes(' hello')) {
-                    yield sendComment(issueNumber, "Is it me you're looking for?\n> I can see it in your eyes.");
+                    yield sendComment(issueNumber, "Yes?");
                 }
                 else if (comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
                     yield artifactChecker(issueNumber);
