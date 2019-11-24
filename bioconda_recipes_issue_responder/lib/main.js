@@ -343,7 +343,7 @@ function installBiocondaUtils() {
         const installerLocation = yield tc.downloadTool(URL);
         yield exec.exec("bash", [installerLocation, "-b", "-p", "/home/runner/miniconda"]);
         // Step 2: Create env with bioconda-utils
-        yield exec.exec("/home/runner/miniconda/bin/conda", ["create", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
+        yield exec.exec("/home/runner/miniconda/bin/conda", ["create", "-y", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
     });
 }
 // Download an artifact from CircleCI, rename and upload it

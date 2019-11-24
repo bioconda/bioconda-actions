@@ -360,7 +360,7 @@ async function installBiocondaUtils() {
   await exec.exec("bash", [installerLocation, "-b", "-p", "/home/runner/miniconda"]);
 
   // Step 2: Create env with bioconda-utils
-  await exec.exec("/home/runner/miniconda/bin/conda", ["create", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
+  await exec.exec("/home/runner/miniconda/bin/conda", ["create", "-y", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
 }
 
 
