@@ -401,7 +401,7 @@ function uploadArtifacts(PR) {
 function mergePR(PR) {
     return __awaiter(this, void 0, void 0, function* () {
         const TOKEN = process.env['BOT_TOKEN'];
-        yield sendComment(PR, "I will attempt to upload artifacts and merge this PR. This may take some time, please have patience.");
+        //  await sendComment(PR, "I will attempt to upload artifacts and merge this PR. This may take some time, please have patience.");
         try {
             var mergeable = yield checkIsMergeable(PR);
             console.log("mergeable state of " + PR + " is " + mergeable);

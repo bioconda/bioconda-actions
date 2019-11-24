@@ -424,7 +424,7 @@ async function uploadArtifacts(PR) {
 // Merge a PR
 async function mergePR(PR) {
   const TOKEN = process.env['BOT_TOKEN'];
-  await sendComment(PR, "I will attempt to upload artifacts and merge this PR. This may take some time, please have patience.");
+//  await sendComment(PR, "I will attempt to upload artifacts and merge this PR. This may take some time, please have patience.");
 
   try {
     var mergeable = await checkIsMergeable(PR);
