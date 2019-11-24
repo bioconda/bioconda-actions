@@ -391,7 +391,7 @@ async function downloadAndUpload(x) {
   await io.mv(loc, "." + newName);
 
   if(x.endsWith(".gz")) { // Container
-    var imageName = await loadImage(x);
+    var imageName = await loadImage(newName);
     console.log("uploading container " + imageName);
     await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
     await exec.exec("docker", ["rmi", imageName]);
