@@ -435,7 +435,7 @@ async function uploadArtifacts(PR) {
 
   // Write ~/.involucro
   console.log("writing .involucro");
-  fs.writeFile('/home/runner/.involucro', '{"auths": [ "' + process.env['INVOLUCRO_AUTH'] + '"]}', function(err) {
+  await fs.writeFile('/home/runner/.involucro', '{\n  "auths": [\n    "' + process.env['INVOLUCRO_AUTH'] + '"\n  ]\n}\n', function(err) {
     if(err) throw err;
     console.log("updated!");
     });

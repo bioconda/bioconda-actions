@@ -4,6 +4,8 @@ const request = require('request-promise-native');
 const io = require('@actions/io');
 const tc = require('@actions/tool-cache');
 var assert = require('assert');
+var fs = require('fs');
+
 
 
 function requestCallback(error, response, body) {
@@ -433,7 +435,7 @@ async function runner() {
   //console.log("status of 18875: " + await checkIsMergeable(18875));
   //console.log("status of 18871: " + await checkIsMergeable(18871));
   //console.log("status of 18815: " + await checkIsMergeable(18815));
-  await uploadArtifacts(18815);
+  //await uploadArtifacts(18815);
 }
 
 test('test artifacts', runner);

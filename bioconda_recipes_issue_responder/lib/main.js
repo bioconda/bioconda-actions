@@ -413,7 +413,7 @@ function uploadArtifacts(PR) {
         yield installBiocondaUtils();
         // Write ~/.involucro
         console.log("writing .involucro");
-        fs.writeFile('/home/runner/.involucro', '{"auths": [ "' + process.env['INVOLUCRO_AUTH'] + '"]}', function (err) {
+        yield fs.writeFile('/home/runner/.involucro', '{\n  "auths": [\n    "' + process.env['INVOLUCRO_AUTH'] + '"\n  ]\n}\n', function (err) {
             if (err)
                 throw err;
             console.log("updated!");
