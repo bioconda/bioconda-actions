@@ -4,6 +4,7 @@ const request = require('request-promise-native');
 const io = require('@actions/io');
 const tc = require('@actions/tool-cache');
 var assert = require('assert');
+var fs = require('fs');
 
 
 function requestCallback(error, response, body) {
@@ -431,6 +432,9 @@ async function uploadArtifacts(PR) {
   // Install bioconda-utils
   console.log("Installing bioconda-utils");
   await installBiocondaUtils();
+
+  // Write ~/.involucro
+  fs.writeFile('/home/runner/.involucro', '{"auths": [ "' + process.env['INVOLUCRO_AUTH'] + '"]}');
 
   // Download/upload Artifacts
   console.log("Uploading artifacts");
