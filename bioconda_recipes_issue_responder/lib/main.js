@@ -414,7 +414,7 @@ function mergePR(PR) {
                 // Hit merge
                 var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
                 const payload = { 'sha': sha,
-                    'commit_title': 'Merge PR ' + PR,
+                    'commit_title': '[ci skip] Merge PR ' + PR,
                     'commit_message': 'Merge PR ' + PR,
                     'merge_method': 'squash' };
                 yield request.put({ 'url': URL,
