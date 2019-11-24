@@ -373,6 +373,7 @@ async function loadImage(x) {
     }
   }};
   await exec.exec("docker", ["load", "-qi", x], options);
+  console.log("imageName is " + imageName);
   imageName = imageName.replace("Loaded image: ", "");
   return imageName;
 }
@@ -388,7 +389,8 @@ async function downloadAndUpload(x) {
   // Rename
   const options = {force: true};
   var newName = x.split("/").pop();
-  await io.mv(loc, "." + newName);
+  newName = newName.replace("%3A", "_");
+  await io.mv(loc, newName);
 
   if(x.endsWith(".gz")) { // Container
     var imageName = await loadImage(newName);

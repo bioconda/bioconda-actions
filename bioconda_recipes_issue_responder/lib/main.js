@@ -356,6 +356,7 @@ function loadImage(x) {
                 }
             } };
         yield exec.exec("docker", ["load", "-qi", x], options);
+        console.log("imageName is " + imageName);
         imageName = imageName.replace("Loaded image: ", "");
         return imageName;
     });
@@ -370,7 +371,8 @@ function downloadAndUpload(x) {
         // Rename
         const options = { force: true };
         var newName = x.split("/").pop();
-        yield io.mv(loc, "." + newName);
+        newName = newName.replace("%3A", "_");
+        yield io.mv(loc, newName);
         if (x.endsWith(".gz")) { // Container
             var imageName = yield loadImage(newName);
             console.log("uploading container " + imageName);
