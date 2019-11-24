@@ -373,7 +373,7 @@ async function loadImage(x) {
     }
   }};
   await exec.exec("docker", ["load", "-qi", x], options);
-  imageName = imageName.replace("Loaded image: ", "");
+  imageName = imageName.replace("Loaded image: ", "").trim();
   console.log("imageName is " + imageName);
   return imageName;
 }
