@@ -376,7 +376,7 @@ function downloadAndUpload(x) {
         if (x.endsWith(".gz")) { // Container
             var imageName = yield loadImage(newName);
             console.log("uploading container " + imageName + " EOL");
-            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "--verbose", "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
             yield exec.exec("docker", ["rmi", imageName]);
         }
         else if (x.endsWith(".bz2")) { // Package

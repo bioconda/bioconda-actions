@@ -395,7 +395,7 @@ async function downloadAndUpload(x) {
   if(x.endsWith(".gz")) { // Container
     var imageName = await loadImage(newName);
     console.log("uploading container " + imageName + " EOL");
-    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "--verbose", "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
     await exec.exec("docker", ["rmi", imageName]);
   } else if(x.endsWith(".bz2")) { // Package
     console.log("uploading package");
