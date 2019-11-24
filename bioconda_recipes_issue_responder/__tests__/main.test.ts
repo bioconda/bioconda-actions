@@ -1,8 +1,9 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const request = require('request-promise-native');
-const req = require('request');
-const gh = require('nodegit');
+const io = require('@actions/io');
+const tc = require('@actions/tool-cache');
+var assert = require('assert');
 
 
 function requestCallback(error, response, body) {
@@ -44,7 +45,7 @@ async function fetchArtifacts(ID) {
   let res = "";
   const URL = "http://circleci.com/api/v1.1/project/github/bioconda/bioconda-recipes/" + ID + "/artifacts";
   console.log("contacting circleci " + URL);
-  await req.get({
+  await request.get({
     'url': URL,
     }, function(e, r, b) {
       res += b });
@@ -196,7 +197,6 @@ async function isBiocondaMember(user) {
                 'User-Agent': 'BiocondaCommentResponder'}
     }, function(e, r, b) {
       rv = r.statusCode;
-      console.log("I got called rv " + rv);
     });
   } catch(e) {
     // Do nothing, this just prevents things from crashing on 404
@@ -287,6 +287,142 @@ async function updateFromMaster(PR) {
 }
 
 
+// From stackoverflow: https://stackoverflow.com/a/37764963/4716976
+function delay(ms) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
+
+async function isBiocondaMemberWrapper(x) {
+  console.log(x['user']['login']);
+  return await isBiocondaMember(x['user']['login']);
+}
+
+
+// Ensure there's at least one approval by a member
+async function approvalReview(issueNumber) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + issueNumber + "/reviews";
+  var reviews = {};
+  await request.get({
+    'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'}
+    }, function(e, r, b) {
+      reviews = JSON.parse(b);
+    });
+
+  reviews = reviews.filter(x => x['state'] == 'APPROVED');
+  if(reviews.length == 0) {
+    return false;
+  }
+
+  // Ensure the review author is a member
+  return reviews.some(await isBiocondaMemberWrapper);
+}
+
+
+// Check the mergeable state of a PR
+async function checkIsMergeable(issueNumber, secondTry=false) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  if(secondTry) {  // Sleep 5 seconds to allow the background process to finish
+    await delay(3000);
+  }
+
+  // PR info
+  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + issueNumber;
+  var PRinfo = {};
+  await request.get({
+    'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'}
+    }, function(e, r, b) {
+      PRinfo = JSON.parse(b);
+    });
+
+  // We need mergeable == true and mergeable_state == clean, an approval by a member and 
+  if(PRinfo['mergeable'] === null && !secondTry) {
+    return await checkIsMergeable(issueNumber, true);
+  } else if(PRinfo['mergeable'] === null || !PRinfo['mergeable'] || PRinfo['mergeable_state'] != 'clean') {
+    return false;
+  }
+
+  return await approvalReview(issueNumber);
+}
+
+
+async function installBiocondaUtils() {
+  var URL = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh";
+
+  // Step 1: Download and install conda
+  // Otherwise conda can't install for some reason
+  await io.mkdirP('/home/runner/.conda');
+  const installerLocation = await tc.downloadTool(URL);
+  await exec.exec("bash", [installerLocation, "-b", "-p", home.concat("/miniconda")]);
+
+  // Step 2: Create env with bioconda-utils
+  await exec.exec("/home/runner/miniconda/bin/conda", ["create", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
+}
+
+
+async function downloadAndUpload(x) {
+  const QUAY_TOKEN = process.env['QUAY_OAUTH_TOKEN'];
+  const ANACONDA_TOKEN = process.env['ANACONDA_TOKEN'];
+  const loc = await tc.downloadTool(x);
+  console.log(x + " is named " + loc);
+
+  // Rename
+  const options = {force: true};
+  await io.mv(loc, "." + x.split("/").pop());
+
+  if(x.endsWith(".gz")) { // Container
+    console.log("uploading container");
+    //await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", loc, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+  } else if(x.endsWith(".bz2")) { // Package
+    console.log("uploading package");
+    //await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", loc]);
+  }
+
+  console.log("cleaning up");
+  await io.rmRF(x.split("/").pop());
+}
+
+
+// Courtesy of https://codeburst.io/javascript-async-await-with-foreach-b6ba62bbf404
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
+
+
+// Upload artifacts to quay.io and anaconda
+// Only call this for mergeable PRs!
+async function uploadArtifacts(PR) {
+  // Send a comment about "I will upload the artifacts and then merge!"
+
+  // Get last sha
+  var PRInfo = await getPRInfo(PR);
+  var sha = PRInfo['head']['sha'];
+
+  // Fetch the artifacts
+  var artifacts = await fetchPRShaArtifacts(PR, sha);
+  artifacts = artifacts.filter(x => x.endsWith(".gz") || x.endsWith(".bz2"));
+  console.log(artifacts);
+  assert(artifacts.length > 0);
+
+
+  // Install bioconda-utils
+  //await installBiocondaUtils();
+
+  // Download/upload Artifacts
+  await asyncForEach(artifacts, downloadAndUpload);
+
+  // Hit merge
+  // Message github on error
+}
+
+
 async function runner() {
   //await artifactChecker();
   //await commentReposter('dpryan79', 18794, "some text");
@@ -294,6 +430,10 @@ async function runner() {
   //await hasBeenMerged(18829);
   //await hasBeenMerged(18811);
   //await updateFromMaster(); // This should be in a try/catch
+  //console.log("status of 18875: " + await checkIsMergeable(18875));
+  //console.log("status of 18871: " + await checkIsMergeable(18871));
+  //console.log("status of 18815: " + await checkIsMergeable(18815));
+  await uploadArtifacts(18815);
 }
 
 test('test artifacts', runner);

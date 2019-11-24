@@ -10,6 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const request = require('request-promise-native');
+const io = require('@actions/io');
+const tc = require('@actions/tool-cache');
+var assert = require('assert');
 function requestCallback(error, response, body) {
     console.log("the response code was " + response.statusCode);
     if (error || response.statusCode < 200 || response.statusCode > 202) {
@@ -272,6 +275,160 @@ function updateFromMaster(PR) {
         }
     });
 }
+// From stackoverflow: https://stackoverflow.com/a/37764963/4716976
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+// A wrapper around isBiocondaMember to make things easier
+function isBiocondaMemberWrapper(x) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(x['user']['login']);
+        return yield isBiocondaMember(x['user']['login']);
+    });
+}
+// Ensure there's at least one approval by a member
+function approvalReview(issueNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['BOT_TOKEN'];
+        const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + issueNumber + "/reviews";
+        var reviews = [];
+        yield request.get({
+            'url': URL,
+            'headers': { 'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder' }
+        }, function (e, r, b) {
+            reviews = JSON.parse(b);
+        });
+        reviews = reviews.filter(x => x['state'] == 'APPROVED');
+        if (reviews.length == 0) {
+            return false;
+        }
+        // Ensure the review author is a member
+        return reviews.some(yield isBiocondaMemberWrapper);
+    });
+}
+// Check the mergeable state of a PR
+function checkIsMergeable(issueNumber, secondTry = false) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['BOT_TOKEN'];
+        if (secondTry) { // Sleep 5 seconds to allow the background process to finish
+            yield delay(3000);
+        }
+        // PR info
+        const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + issueNumber;
+        var PRinfo = {};
+        yield request.get({
+            'url': URL,
+            'headers': { 'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder' }
+        }, function (e, r, b) {
+            PRinfo = JSON.parse(b);
+        });
+        // We need mergeable == true and mergeable_state == clean, an approval by a member and
+        if (PRinfo['mergeable'] === null && !secondTry) {
+            return yield checkIsMergeable(issueNumber, true);
+        }
+        else if (PRinfo['mergeable'] === null || !PRinfo['mergeable'] || PRinfo['mergeable_state'] != 'clean') {
+            return false;
+        }
+        return yield approvalReview(issueNumber);
+    });
+}
+function installBiocondaUtils() {
+    return __awaiter(this, void 0, void 0, function* () {
+        var URL = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh";
+        // Step 1: Download and install conda
+        // Otherwise conda can't install for some reason
+        yield io.mkdirP('/home/runner/.conda');
+        const installerLocation = yield tc.downloadTool(URL);
+        yield exec.exec("bash", [installerLocation, "-b", "-p", "/home/runner/miniconda"]);
+        // Step 2: Create env with bioconda-utils
+        yield exec.exec("/home/runner/miniconda/bin/conda", ["create", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
+    });
+}
+// Download an artifact from CircleCI, rename and upload it
+function downloadAndUpload(x) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const QUAY_TOKEN = process.env['QUAY_OAUTH_TOKEN'];
+        const ANACONDA_TOKEN = process.env['ANACONDA_TOKEN'];
+        const loc = yield tc.downloadTool(x);
+        console.log(x + " is named " + loc);
+        // Rename
+        const options = { force: true };
+        yield io.mv(loc, "." + x.split("/").pop());
+        if (x.endsWith(".gz")) { // Container
+            console.log("uploading container");
+            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", loc, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+        }
+        else if (x.endsWith(".bz2")) { // Package
+            console.log("uploading package");
+            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", loc]);
+        }
+        console.log("cleaning up");
+        yield io.rmRF(x.split("/").pop());
+    });
+}
+// Courtesy of https://codeburst.io/javascript-async-await-with-foreach-b6ba62bbf404
+function asyncForEach(array, callback) {
+    return __awaiter(this, void 0, void 0, function* () {
+        for (let index = 0; index < array.length; index++) {
+            yield callback(array[index], index, array);
+        }
+    });
+}
+// Upload artifacts to quay.io and anaconda, return the commit sha
+// Only call this for mergeable PRs!
+function uploadArtifacts(PR) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Get last sha
+        var PRInfo = yield getPRInfo(PR);
+        var sha = PRInfo['head']['sha'];
+        // Fetch the artifacts
+        var artifacts = yield fetchPRShaArtifacts(PR, sha);
+        artifacts = artifacts.filter(x => String(x).endsWith(".gz") || String(x).endsWith(".bz2"));
+        console.log(artifacts);
+        assert(artifacts.length > 0);
+        // Install bioconda-utils
+        console.log("Installing bioconda-utils");
+        yield installBiocondaUtils();
+        // Download/upload Artifacts
+        console.log("Uploading artifacts");
+        yield asyncForEach(artifacts, downloadAndUpload);
+        return sha;
+    });
+}
+// Merge a PR
+function mergePR(PR) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['BOT_TOKEN'];
+        yield sendComment(PR, "I will attempt to upload artifacts and merge this PR. This may take some time, please have patience.");
+        try {
+            var mergeable = yield checkIsMergeable(PR);
+            console.log("mergeable state of " + PR + " is " + mergeable);
+            if (!mergeable) {
+                yield sendComment(PR, "Sorry, this PR cannot be merged at this time.");
+            }
+            else {
+                console.log("uploading artifacts");
+                var sha = yield uploadArtifacts(PR);
+                // Hit merge
+                var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
+                const payload = { 'sha': sha,
+                    'commit_title': 'Merge PR ' + PR,
+                    'commit_message': 'Merge PR ' + PR,
+                    'merge_method': 'squash' };
+                yield request.put({ 'url': URL,
+                    'headers': { 'Authorization': 'token ' + TOKEN,
+                        'User-Agent': 'BiocondaCommentResponder' },
+                    'body': payload,
+                    'json': true });
+            }
+        }
+        catch (e) {
+            yield sendComment(PR, "I received an error uploading the build artifacts or merging the PR!");
+        }
+    });
+}
 // This requires that a JOB_CONTEXT environment variable, which is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -292,6 +449,9 @@ function run() {
                 }
                 else if (comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
                     yield artifactChecker(issueNumber);
+                }
+                else if (comment.includes(' please merge') && jobContext['actor'] == 'dpryan79') {
+                    yield mergePR(issueNumber);
                     //} else {
                     // Methods in development can go below, flanked by checking who is running them
                     //if(jobContext['actor'] != 'dpryan79') {
