@@ -356,7 +356,7 @@ function loadImage(x) {
                 }
             } };
         yield exec.exec("docker", ["load", "-qi", x], options);
-        imageName = imageName.replace("Loaded image: ", "").trim();
+        imageName = imageName.replace("Loaded image: ", "").trim().replace("quay.io/biocontainers/", "");
         console.log("imageName is " + imageName);
         return imageName;
     });
