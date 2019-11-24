@@ -356,8 +356,8 @@ function loadImage(x) {
                 }
             } };
         yield exec.exec("docker", ["load", "-qi", x], options);
-        console.log("imageName is " + imageName);
         imageName = imageName.replace("Loaded image: ", "");
+        console.log("imageName is " + imageName);
         return imageName;
     });
 }
@@ -371,11 +371,11 @@ function downloadAndUpload(x) {
         // Rename
         const options = { force: true };
         var newName = x.split("/").pop();
-        newName = newName.replace("%3A", "_");
+        newName = newName.replace("%3A", "_").replace("\n", "");
         yield io.mv(loc, newName);
         if (x.endsWith(".gz")) { // Container
             var imageName = yield loadImage(newName);
-            console.log("uploading container " + imageName);
+            console.log("uploading container " + imageName + " EOL");
             yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
             yield exec.exec("docker", ["rmi", imageName]);
         }

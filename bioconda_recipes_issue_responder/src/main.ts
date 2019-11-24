@@ -373,8 +373,8 @@ async function loadImage(x) {
     }
   }};
   await exec.exec("docker", ["load", "-qi", x], options);
-  console.log("imageName is " + imageName);
   imageName = imageName.replace("Loaded image: ", "");
+  console.log("imageName is " + imageName);
   return imageName;
 }
 
@@ -389,12 +389,12 @@ async function downloadAndUpload(x) {
   // Rename
   const options = {force: true};
   var newName = x.split("/").pop();
-  newName = newName.replace("%3A", "_");
+  newName = newName.replace("%3A", "_").replace("\n", "");
   await io.mv(loc, newName);
 
   if(x.endsWith(".gz")) { // Container
     var imageName = await loadImage(newName);
-    console.log("uploading container " + imageName);
+    console.log("uploading container " + imageName + " EOL");
     await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
     await exec.exec("docker", ["rmi", imageName]);
   } else if(x.endsWith(".bz2")) { // Package
