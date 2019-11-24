@@ -434,7 +434,12 @@ async function uploadArtifacts(PR) {
   await installBiocondaUtils();
 
   // Write ~/.involucro
-  fs.writeFile('/home/runner/.involucro', '{"auths": [ "' + process.env['INVOLUCRO_AUTH'] + '"]}');
+  console.log("writing .involucro");
+  fs.writeFile('/home/runner/.involucro', '{"auths": [ "' + process.env['INVOLUCRO_AUTH'] + '"]}', function(err) {
+    if(err) throw err;
+    console.log("updated!");
+    });
+  console.log("done");
 
   // Download/upload Artifacts
   console.log("Uploading artifacts");
