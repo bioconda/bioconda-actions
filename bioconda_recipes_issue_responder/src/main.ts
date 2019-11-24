@@ -373,14 +373,15 @@ async function downloadAndUpload(x) {
 
   // Rename
   const options = {force: true};
-  await io.mv(loc, "." + x.split("/").pop());
+  var newName = x.split("/").pop();
+  await io.mv(loc, "." + newName);
 
   if(x.endsWith(".gz")) { // Container
     console.log("uploading container");
-    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", loc, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", newName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
   } else if(x.endsWith(".bz2")) { // Package
     console.log("uploading package");
-    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", loc]);
+    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", newName]);
   }
 
   console.log("cleaning up");
