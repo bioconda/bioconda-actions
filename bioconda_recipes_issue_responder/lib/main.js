@@ -346,6 +346,20 @@ function installBiocondaUtils() {
         yield exec.exec("/home/runner/miniconda/bin/conda", ["create", "-y", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
     });
 }
+// Load a tarball into docker and return the container name
+function loadImage(x) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var imageName = "";
+        const options = { listeners: {
+                stdout: (data) => {
+                    imageName += data.toString();
+                }
+            } };
+        yield exec.exec("docker", ["load", "-qi", x], options);
+        imageName = imageName.replace("Loaded image: ", "");
+        return imageName;
+    });
+}
 // Download an artifact from CircleCI, rename and upload it
 function downloadAndUpload(x) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -358,8 +372,10 @@ function downloadAndUpload(x) {
         var newName = x.split("/").pop();
         yield io.mv(loc, "." + newName);
         if (x.endsWith(".gz")) { // Container
-            console.log("uploading container");
-            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", newName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+            var imageName = yield loadImage(x);
+            console.log("uploading container " + imageName);
+            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+            yield exec.exec("docker", ["rmi", imageName]);
         }
         else if (x.endsWith(".bz2")) { // Package
             console.log("uploading package");

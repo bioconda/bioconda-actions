@@ -364,6 +364,20 @@ async function installBiocondaUtils() {
 }
 
 
+// Load a tarball into docker and return the container name
+async function loadImage(x) {
+  var imageName = "";
+  const options = { listeners: {
+    stdout: (data: Buffer) => {
+      imageName += data.toString();
+    }
+  }};
+  await exec.exec("docker", ["load", "-qi", x], options);
+  imageName = imageName.replace("Loaded image: ", "");
+  return imageName;
+}
+
+
 // Download an artifact from CircleCI, rename and upload it
 async function downloadAndUpload(x) {
   const QUAY_TOKEN = process.env['QUAY_OAUTH_TOKEN'];
@@ -377,8 +391,10 @@ async function downloadAndUpload(x) {
   await io.mv(loc, "." + newName);
 
   if(x.endsWith(".gz")) { // Container
-    console.log("uploading container");
-    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", newName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+    var imageName = await loadImage(x);
+    console.log("uploading container " + imageName);
+    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+    await exec.exec("docker", ["rmi", imageName]);
   } else if(x.endsWith(".bz2")) { // Package
     console.log("uploading package");
     await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", newName]);
