@@ -361,14 +361,26 @@ function downloadAndUpload(x) {
         yield io.mv(loc, newName);
         if (x.endsWith(".gz")) { // Container
             console.log("uploading with skopeo newName " + newName);
-            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
-                "--insecure-policy",
-                "--command-timeout", "600s",
-                "copy",
-                "docker-archive:" + newName,
-                "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", ""),
-                "--dest-creds", process.env['QUAY_LOGIN']
-            ]);
+            // This can fail, retry with 5 second delays
+            var count = 0;
+            var maxTries = 5;
+            while (true) {
+                try {
+                    yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
+                        "--insecure-policy",
+                        "--command-timeout", "600s",
+                        "copy",
+                        "docker-archive:" + newName,
+                        "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", ""),
+                        "--dest-creds", process.env['QUAY_LOGIN']
+                    ]);
+                }
+                catch (e) {
+                    if (++count == maxTries)
+                        throw e;
+                    yield delay(5000);
+                }
+            }
         }
         else if (x.endsWith(".bz2")) { // Package
             console.log("uploading package");

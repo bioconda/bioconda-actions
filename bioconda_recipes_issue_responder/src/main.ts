@@ -380,13 +380,23 @@ async function downloadAndUpload(x) {
 
   if(x.endsWith(".gz")) { // Container
     console.log("uploading with skopeo newName " + newName );
-    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
-      "--insecure-policy",
-      "--command-timeout", "600s",
-      "copy",
-      "docker-archive:" + newName,
-      "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", ""),
-      "--dest-creds", process.env['QUAY_LOGIN']]);
+    // This can fail, retry with 5 second delays
+    var count = 0;
+    var maxTries = 5;
+    while(true) {
+      try {
+        await exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
+          "--insecure-policy",
+          "--command-timeout", "600s",
+          "copy",
+          "docker-archive:" + newName,
+          "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", ""),
+          "--dest-creds", process.env['QUAY_LOGIN']]);
+      } catch(e) {
+        if (++count == maxTries) throw e;
+        await delay(5000);
+      }
+    }
   } else if(x.endsWith(".bz2")) { // Package
     console.log("uploading package");
     await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", newName]);
