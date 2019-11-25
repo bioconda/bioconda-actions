@@ -394,10 +394,18 @@ async function downloadAndUpload(x) {
   await io.mv(loc, newName);
 
   if(x.endsWith(".gz")) { // Container
-    var imageName = await loadImage(newName);
-    console.log("uploading container " + imageName + " EOL");
-    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "--verbose", "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
-    await exec.exec("docker", ["rmi", imageName]);
+//    var imageName = await loadImage(newName);
+//    console.log("uploading container " + imageName + " EOL");
+//    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "--verbose", "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
+//    await exec.exec("docker", ["rmi", imageName]);
+    console.log("uploading with skopeo newName " + newName );
+    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
+      "--insecure-policy",
+      "--command-timeout", "600",
+      "copy",
+      "docker-archive:" + newName,
+      "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", "").replace(":", "="),
+      "--dest-creds", process.env['QUAY_LOGIN']]);
   } else if(x.endsWith(".bz2")) { // Package
     console.log("uploading package");
     await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", newName]);
