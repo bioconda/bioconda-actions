@@ -344,22 +344,7 @@ function installBiocondaUtils() {
         const installerLocation = yield tc.downloadTool(URL);
         yield exec.exec("bash", [installerLocation, "-b", "-p", "/home/runner/miniconda"]);
         // Step 2: Create env with bioconda-utils
-        yield exec.exec("/home/runner/miniconda/bin/conda", ["create", "-y", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client"]);
-    });
-}
-// Load a tarball into docker and return the container name
-function loadImage(x) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var imageName = "";
-        const options = { listeners: {
-                stdout: (data) => {
-                    imageName += data.toString();
-                }
-            } };
-        yield exec.exec("docker", ["load", "-qi", x], options);
-        imageName = imageName.replace("Loaded image: ", "").trim().replace("quay.io/biocontainers/", "");
-        console.log("imageName is " + imageName);
-        return imageName;
+        yield exec.exec("/home/runner/miniconda/bin/conda", ["create", "-y", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client", "python=3.7"]);
     });
 }
 // Download an artifact from CircleCI, rename and upload it
@@ -372,20 +357,16 @@ function downloadAndUpload(x) {
         // Rename
         const options = { force: true };
         var newName = x.split("/").pop();
-        newName = newName.replace("%3A", "_").replace("\n", "");
+        newName = newName.replace("%3A", ":").replace("\n", "");
         yield io.mv(loc, newName);
         if (x.endsWith(".gz")) { // Container
-            //    var imageName = await loadImage(newName);
-            //    console.log("uploading container " + imageName + " EOL");
-            //    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/mulled-build", ["push", imageName, "--verbose", "-n", "biocontainers", "--oauth-token", QUAY_TOKEN]);
-            //    await exec.exec("docker", ["rmi", imageName]);
             console.log("uploading with skopeo newName " + newName);
             yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
                 "--insecure-policy",
                 "--command-timeout", "600s",
                 "copy",
                 "docker-archive:" + newName,
-                "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", "").replace(":", "="),
+                "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", ""),
                 "--dest-creds", process.env['QUAY_LOGIN']
             ]);
         }
