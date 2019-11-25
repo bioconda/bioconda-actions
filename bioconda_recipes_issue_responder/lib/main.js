@@ -365,7 +365,8 @@ function downloadAndUpload(x) {
             // This can fail, retry with 5 second delays
             var count = 0;
             var maxTries = 5;
-            while (true) {
+            var success = false;
+            while (count < maxTries) {
                 try {
                     yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
                         "--insecure-policy",
@@ -375,11 +376,16 @@ function downloadAndUpload(x) {
                         "docker://quay.io/biocontainers/" + imageName,
                         "--dest-creds", process.env['QUAY_LOGIN']
                     ]);
+                    success = true;
+                    break;
                 }
                 catch (e) {
                     if (++count == maxTries)
                         throw e;
                     yield delay(5000);
+                }
+                if (success) {
+                    break;
                 }
             }
         }
@@ -414,14 +420,6 @@ function uploadArtifacts(PR) {
         // Install bioconda-utils
         console.log("Installing bioconda-utils");
         yield installBiocondaUtils();
-        // Write ~/.involucro
-        console.log("writing .involucro");
-        yield fs.writeFile('/home/runner/.involucro', '{\n  "auths": [\n    "' + process.env['INVOLUCRO_AUTH'] + '"\n  ]\n}\n', function (err) {
-            if (err)
-                throw err;
-            console.log("updated!");
-        });
-        console.log("done");
         // Download/upload Artifacts
         console.log("Uploading artifacts");
         yield asyncForEach(artifacts, downloadAndUpload);
