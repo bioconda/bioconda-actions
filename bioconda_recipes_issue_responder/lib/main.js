@@ -382,7 +382,7 @@ function downloadAndUpload(x) {
             console.log("uploading with skopeo newName " + newName);
             yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/skopeo", [
                 "--insecure-policy",
-                "--command-timeout", "600",
+                "--command-timeout", "600s",
                 "copy",
                 "docker-archive:" + newName,
                 "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", "").replace(":", "="),
