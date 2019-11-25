@@ -357,7 +357,8 @@ function downloadAndUpload(x) {
         // Rename
         const options = { force: true };
         var newName = x.split("/").pop();
-        newName = newName.replace("%3A", ":").replace("\n", "");
+        var imageName = newName.replace("%3A", ":").replace("\n", "").replace(".tar.gz", "");
+        newName = newName.replace("%3A", "_").replace("\n", ""); // the tarball needs a regular name without :, the container needs pkg:tag
         yield io.mv(loc, newName);
         if (x.endsWith(".gz")) { // Container
             console.log("uploading with skopeo newName " + newName);
@@ -371,7 +372,7 @@ function downloadAndUpload(x) {
                         "--command-timeout", "600s",
                         "copy",
                         "docker-archive:" + newName,
-                        "docker://quay.io/biocontainers/" + newName.replace(".tar.gz", ""),
+                        "docker://quay.io/biocontainers/" + imageName,
                         "--dest-creds", process.env['QUAY_LOGIN']
                     ]);
                 }
