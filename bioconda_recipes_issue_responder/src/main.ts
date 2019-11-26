@@ -169,7 +169,6 @@ async function makeArtifactComment(PR, sha) {
     await sendComment(PR, comment);
 
   } else {
-    console.log("No packages");
     await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
   }
 }
@@ -202,7 +201,6 @@ async function isBiocondaMember(user) {
                 'User-Agent': 'BiocondaCommentResponder'}
     }, function(e, r, b) {
       rv = r.statusCode;
-      console.log("I got called rv " + rv);
     });
   } catch(e) {
     // Do nothing, this just prevents things from crashing on 404
@@ -256,21 +254,17 @@ async function updateFromMasterRunner(PR) {
   var remoteRepo = PRInfo['head']['repo']['full_name'];  // Remote repo
 
   // Clone
-  console.log("git clone");
   await exec.exec("git", ["clone", "git@github.com:" + remoteRepo + ".git"]);
   process.chdir('bioconda-recipes');
 
   // Add/pull upstream
-  console.log("git pull upstream");
   await exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
   await exec.exec("git", ["pull", "brmaster", "master"]);
 
   // Merge
-  console.log("git merge");
   await exec.exec("git", ["checkout", remoteBranch]);
   await exec.exec("git", ["merge", "master"]);
 
-  console.log("git push");
   await exec.exec("git", ["push"]);
 }
 
@@ -294,7 +288,6 @@ function delay(ms) {
 
 // A wrapper around isBiocondaMember to make things easier
 async function isBiocondaMemberWrapper(x) {
-  console.log(x['user']['login']);
   return await isBiocondaMember(x['user']['login']);
 }
 
@@ -365,12 +358,32 @@ async function installBiocondaUtils() {
 }
 
 
+// Ensure uploaded containers are in repos that have public visibility
+async function toggleVisibility(x) {
+  var URL = "https://quay.io/api/v1/repository/biocontainers/" + x + "/changevisibility";
+  const body = {'visibility': 'public'};
+  var rc = 0;
+  try{
+    await request.post({
+      'url': URL,
+      'headers': {'Authorization': 'Bearer ' + process.env['QUAY_OAUTH_TOKEN'],
+                  'Content-Type': 'application/json'},
+      'body': body,
+      'json': true
+    }, function(e, r, b) {
+      rc = r.statusCode;
+    });
+  } catch(e) {
+    // Do nothing
+  }
+  console.log("Trying to toggle visibility (" + URL + ") returned " + rc);
+}
+
+
 // Download an artifact from CircleCI, rename and upload it
 async function downloadAndUpload(x) {
-  const QUAY_TOKEN = process.env['QUAY_OAUTH_TOKEN'];
   const ANACONDA_TOKEN = process.env['ANACONDA_TOKEN'];
   const loc = await tc.downloadTool(x);
-  console.log(x + " is named " + loc);
 
   // Rename
   const options = {force: true};
@@ -401,6 +414,7 @@ async function downloadAndUpload(x) {
         await delay(5000);
       }
       if(success) {
+        await toggleVisibility(x.split("/").pop().split("%3A")[0]);
         break;
       }
     }
@@ -432,15 +446,12 @@ async function uploadArtifacts(PR) {
   // Fetch the artifacts
   var artifacts = await fetchPRShaArtifacts(PR, sha);
   artifacts = artifacts.filter(x => String(x).endsWith(".gz") || String(x).endsWith(".bz2"));
-  console.log(artifacts);
   assert(artifacts.length > 0);
 
   // Install bioconda-utils
-  console.log("Installing bioconda-utils");
   await installBiocondaUtils();
 
   // Download/upload Artifacts
-  console.log("Uploading artifacts");
   await asyncForEach(artifacts, downloadAndUpload);
 
   return sha;
@@ -498,7 +509,7 @@ async function run() {
         await sendComment(issueNumber, "Yes?");
       } else if(comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
         await artifactChecker(issueNumber);
-      } else if(comment.includes(' please merge') && jobContext['actor'] == 'dpryan79') {
+      } else if(comment.includes(' please merge')) {
         await mergePR(issueNumber);
 
       //} else {

@@ -166,7 +166,6 @@ function makeArtifactComment(PR, sha) {
             yield sendComment(PR, comment);
         }
         else {
-            console.log("No packages");
             yield sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
         }
     });
@@ -198,7 +197,6 @@ function isBiocondaMember(user) {
                     'User-Agent': 'BiocondaCommentResponder' }
             }, function (e, r, b) {
                 rv = r.statusCode;
-                console.log("I got called rv " + rv);
             });
         }
         catch (e) {
@@ -249,18 +247,14 @@ function updateFromMasterRunner(PR) {
         var remoteBranch = PRInfo['head']['ref']; // Remote branch
         var remoteRepo = PRInfo['head']['repo']['full_name']; // Remote repo
         // Clone
-        console.log("git clone");
         yield exec.exec("git", ["clone", "git@github.com:" + remoteRepo + ".git"]);
         process.chdir('bioconda-recipes');
         // Add/pull upstream
-        console.log("git pull upstream");
         yield exec.exec("git", ["remote", "add", "brmaster", "https://github.com/bioconda/bioconda-recipes"]);
         yield exec.exec("git", ["pull", "brmaster", "master"]);
         // Merge
-        console.log("git merge");
         yield exec.exec("git", ["checkout", remoteBranch]);
         yield exec.exec("git", ["merge", "master"]);
-        console.log("git push");
         yield exec.exec("git", ["push"]);
     });
 }
@@ -283,7 +277,6 @@ function delay(ms) {
 // A wrapper around isBiocondaMember to make things easier
 function isBiocondaMemberWrapper(x) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(x['user']['login']);
         return yield isBiocondaMember(x['user']['login']);
     });
 }
@@ -347,13 +340,34 @@ function installBiocondaUtils() {
         yield exec.exec("/home/runner/miniconda/bin/conda", ["create", "-y", "-c", "conda-forge", "-c", "bioconda", "-n", "bioconda", "bioconda-utils", "anaconda-client", "python=3.7"]);
     });
 }
+// Ensure uploaded containers are in repos that have public visibility
+function toggleVisibility(x) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var URL = "https://quay.io/api/v1/repository/biocontainers/" + x + "/changevisibility";
+        const body = { 'visibility': 'public' };
+        var rc = 0;
+        try {
+            yield request.post({
+                'url': URL,
+                'headers': { 'Authorization': 'Bearer ' + process.env['QUAY_OAUTH_TOKEN'],
+                    'Content-Type': 'application/json' },
+                'body': body,
+                'json': true
+            }, function (e, r, b) {
+                rc = r.statusCode;
+            });
+        }
+        catch (e) {
+            // Do nothing
+        }
+        console.log("Trying to toggle visibility (" + URL + ") returned " + rc);
+    });
+}
 // Download an artifact from CircleCI, rename and upload it
 function downloadAndUpload(x) {
     return __awaiter(this, void 0, void 0, function* () {
-        const QUAY_TOKEN = process.env['QUAY_OAUTH_TOKEN'];
         const ANACONDA_TOKEN = process.env['ANACONDA_TOKEN'];
         const loc = yield tc.downloadTool(x);
-        console.log(x + " is named " + loc);
         // Rename
         const options = { force: true };
         var newName = x.split("/").pop();
@@ -385,6 +399,7 @@ function downloadAndUpload(x) {
                     yield delay(5000);
                 }
                 if (success) {
+                    yield toggleVisibility(x.split("/").pop().split("%3A")[0]);
                     break;
                 }
             }
@@ -415,13 +430,10 @@ function uploadArtifacts(PR) {
         // Fetch the artifacts
         var artifacts = yield fetchPRShaArtifacts(PR, sha);
         artifacts = artifacts.filter(x => String(x).endsWith(".gz") || String(x).endsWith(".bz2"));
-        console.log(artifacts);
         assert(artifacts.length > 0);
         // Install bioconda-utils
-        console.log("Installing bioconda-utils");
         yield installBiocondaUtils();
         // Download/upload Artifacts
-        console.log("Uploading artifacts");
         yield asyncForEach(artifacts, downloadAndUpload);
         return sha;
     });
@@ -479,7 +491,7 @@ function run() {
                 else if (comment.includes(' please fetch artifacts') || comment.includes(' please fetch artefacts')) {
                     yield artifactChecker(issueNumber);
                 }
-                else if (comment.includes(' please merge') && jobContext['actor'] == 'dpryan79') {
+                else if (comment.includes(' please merge')) {
                     yield mergePR(issueNumber);
                     //} else {
                     // Methods in development can go below, flanked by checking who is running them

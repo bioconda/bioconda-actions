@@ -368,7 +368,6 @@ async function installBiocondaUtils() {
 
 
 async function downloadAndUpload(x) {
-  const QUAY_TOKEN = process.env['QUAY_OAUTH_TOKEN'];
   const ANACONDA_TOKEN = process.env['ANACONDA_TOKEN'];
   const loc = await tc.downloadTool(x);
   console.log(x + " is named " + loc);
