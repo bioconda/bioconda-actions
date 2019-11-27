@@ -413,10 +413,9 @@ async function downloadAndUpload(x) {
         if (++count == maxTries) throw e;
         await delay(5000);
       }
-      if(success) {
-        await toggleVisibility(x.split("/").pop().split("%3A")[0]);
-        break;
-      }
+    }
+    if(success) {
+      await toggleVisibility(x.split("/").pop().split("%3A")[0]);
     }
   } else if(x.endsWith(".bz2")) { // Package
     console.log("uploading package");

@@ -398,10 +398,9 @@ function downloadAndUpload(x) {
                         throw e;
                     yield delay(5000);
                 }
-                if (success) {
-                    yield toggleVisibility(x.split("/").pop().split("%3A")[0]);
-                    break;
-                }
+            }
+            if (success) {
+                yield toggleVisibility(x.split("/").pop().split("%3A")[0]);
             }
         }
         else if (x.endsWith(".bz2")) { // Package
