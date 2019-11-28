@@ -512,7 +512,7 @@ async function run() {
     const comment = <string> jobContext['event']['comment']['body'];
     console.log('the comment is: ' + comment);
 
-    if(comment.startsWith('@bioconda-bot')) {
+    if(comment.startsWith('@bioconda-bot') || comment.startsWith('@BiocondaBot')) {
       // Cases that need to be implemented are:
       //   please merge
       if(comment.includes('please update')) {
