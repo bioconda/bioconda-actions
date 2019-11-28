@@ -489,6 +489,19 @@ async function mergePR(PR) {
 }
 
 
+// Add the "Please review and merge" label to a PR
+async function addPRLabel(PR) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/issues/" + PR + "/labels";
+  const payload = {'labels': ["please review & merge"]};
+  await request.post({'url': URL,
+                      'headers': {'Authorization': 'token ' + TOKEN,
+                                  'User-Agent': 'BiocondaCommentResponder'},
+                      'body': payload,
+                      'json': true});
+}
+
+
 // This requires that a JOB_CONTEXT environment variable, which is made with `toJson(github)`
 async function run() {
   const jobContext = JSON.parse(<string> process.env['JOB_CONTEXT']);
@@ -510,7 +523,8 @@ async function run() {
         await artifactChecker(issueNumber);
       } else if(comment.includes(' please merge')) {
         await mergePR(issueNumber);
-
+      } else if(comment.includes(' please add label')) {
+        await addPRLabel(issueNumber);
       //} else {
         // Methods in development can go below, flanked by checking who is running them
         //if(jobContext['actor'] != 'dpryan79') {

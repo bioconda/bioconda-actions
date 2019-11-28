@@ -469,6 +469,19 @@ function mergePR(PR) {
         }
     });
 }
+// Add the "Please review and merge" label to a PR
+function addPRLabel(PR) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['BOT_TOKEN'];
+        var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/issues/" + PR + "/labels";
+        const payload = { 'labels': ["please review & merge"] };
+        yield request.post({ 'url': URL,
+            'headers': { 'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder' },
+            'body': payload,
+            'json': true });
+    });
+}
 // This requires that a JOB_CONTEXT environment variable, which is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -492,6 +505,9 @@ function run() {
                 }
                 else if (comment.includes(' please merge')) {
                     yield mergePR(issueNumber);
+                }
+                else if (comment.includes(' please add label')) {
+                    yield addPRLabel(issueNumber);
                     //} else {
                     // Methods in development can go below, flanked by checking who is running them
                     //if(jobContext['actor'] != 'dpryan79') {
