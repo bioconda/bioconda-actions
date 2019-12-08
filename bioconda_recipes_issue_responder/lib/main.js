@@ -433,7 +433,7 @@ function uploadArtifacts(PR) {
         // Install bioconda-utils
         yield installBiocondaUtils();
         // Download/upload Artifacts
-        //await asyncForEach(artifacts, downloadAndUpload);
+        yield asyncForEach(artifacts, downloadAndUpload);
         return sha;
     });
 }
@@ -454,6 +454,7 @@ function mergePR(PR) {
                 // Hit merge
                 var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
                 const payload = { 'sha': sha,
+                    'merge_method': 'merge',
                     'commit_title': '[ci skip] Merge PR ' + PR,
                     'commit_message': 'Merge PR #' + PR };
                 console.log("Putting merge commit");
