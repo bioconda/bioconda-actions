@@ -405,7 +405,7 @@ function downloadAndUpload(x) {
         }
         else if (x.endsWith(".bz2")) { // Package
             console.log("uploading package");
-            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["--force", "-t", ANACONDA_TOKEN, "upload", newName]);
+            yield exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", newName, "--force"]);
         }
         console.log("cleaning up");
         yield io.rmRF(x.split("/").pop());
