@@ -475,16 +475,16 @@ async function mergePR(PR) {
       // Hit merge
       var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
       const payload = {'sha': sha,
-                       'merge_method': 'merge',
                        'commit_title': '[ci skip] Merge PR ' + PR,
-                       'commit_message': 'Merge PR #' + PR};
+                       'commit_message': 'Merge PR ' + PR,
+                       'merge_method': 'merge'};
       console.log("Putting merge commit");
       await request.put({'url': URL,
                          'headers': {'Authorization': 'token ' + TOKEN,
                                      'User-Agent': 'BiocondaCommentResponder'},
                          'body': payload,
                          'json': true}, function(e, r, b) {
-            console.log("body " + b);
+            console.log("body " + <string> b);
             console.log("mergePR the response code was " + r.statusCode);
             });
     }
