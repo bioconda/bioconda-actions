@@ -456,11 +456,15 @@ function mergePR(PR) {
                 const payload = { 'sha': sha,
                     'commit_title': '[ci skip] Merge PR ' + PR,
                     'commit_message': 'Merge PR #' + PR };
+                console.log("Putting merge commit");
                 yield request.put({ 'url': URL,
                     'headers': { 'Authorization': 'token ' + TOKEN,
                         'User-Agent': 'BiocondaCommentResponder' },
                     'body': payload,
-                    'json': true }, requestCallback);
+                    'json': true }, function (e, r, b) {
+                    console.log("the response code was " + r.responseCode);
+                    console.log("body " + b);
+                });
             }
         }
         catch (e) {
