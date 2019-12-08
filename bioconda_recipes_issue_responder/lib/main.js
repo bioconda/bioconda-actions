@@ -462,8 +462,8 @@ function mergePR(PR) {
                         'User-Agent': 'BiocondaCommentResponder' },
                     'body': payload,
                     'json': true }, function (e, r, b) {
-                    console.log("the response code was " + r.responseCode);
                     console.log("body " + b);
+                    console.log("the response code was " + r.statusCode);
                 });
             }
         }
