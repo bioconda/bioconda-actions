@@ -456,7 +456,7 @@ function mergePR(PR) {
                 const payload = { 'sha': sha,
                     'commit_title': '[ci skip] Merge PR ' + PR,
                     'commit_message': 'Merge PR ' + PR,
-                    'merge_method': 'squash' };
+                    'merge_method': 'merge' };
                 yield request.put({ 'url': URL,
                     'headers': { 'Authorization': 'token ' + TOKEN,
                         'User-Agent': 'BiocondaCommentResponder' },
