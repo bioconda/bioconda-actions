@@ -457,14 +457,14 @@ function mergePR(PR) {
                 const payload = { 'sha': sha,
                     'commit_title': '[ci skip] Merge PR ' + PR,
                     'commit_message': 'Merge PR ' + PR,
-                    'merge_method': 'merge' };
+                    'merge_method': 'squash' };
                 console.log("Putting merge commit");
                 yield request.put({ 'url': URL,
                     'headers': { 'Authorization': 'token ' + TOKEN,
                         'User-Agent': 'BiocondaCommentResponder' },
                     'body': payload,
                     'json': true }, function (e, r, b) {
-                    console.log("body " + JSON.parse(b));
+                    console.log("body " + b);
                     console.log("mergePR the response code was " + r.statusCode);
                 });
             }
