@@ -451,7 +451,7 @@ async function uploadArtifacts(PR) {
   await installBiocondaUtils();
 
   // Download/upload Artifacts
-  await asyncForEach(artifacts, downloadAndUpload);
+  //await asyncForEach(artifacts, downloadAndUpload);
 
   return sha;
 }
