@@ -474,7 +474,7 @@ async function mergePR(PR) {
       // Hit merge
       var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
       const payload = {'sha': sha,
-                       'merge_method': 'merge',
+                       'merge_method': 'squash',
                        'commit_title': '[ci skip] Merge PR ' + PR,
                        'commit_message': 'Merge PR #' + PR};
       console.log("Putting merge commit")
