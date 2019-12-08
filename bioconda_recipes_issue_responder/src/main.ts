@@ -483,7 +483,7 @@ async function mergePR(PR) {
                          'body': payload,
                          'json': true}, function(e, r, b) {
             console.log("body " + b);
-            console.log("the response code was " + r.statusCode);
+            console.log("mergePR the response code was " + r.statusCode);
             });
     }
   } catch(e) {
