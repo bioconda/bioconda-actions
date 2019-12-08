@@ -433,7 +433,7 @@ function uploadArtifacts(PR) {
         // Install bioconda-utils
         yield installBiocondaUtils();
         // Download/upload Artifacts
-        yield asyncForEach(artifacts, downloadAndUpload);
+        //await asyncForEach(artifacts, downloadAndUpload);
         return sha;
     });
 }
