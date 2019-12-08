@@ -475,13 +475,12 @@ async function mergePR(PR) {
       var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
       const payload = {'sha': sha,
                        'commit_title': '[ci skip] Merge PR ' + PR,
-                       'commit_message': 'Merge PR ' + PR,
-                       'merge_method': 'merge'};
+                       'commit_message': 'Merge PR #' + PR};
       await request.put({'url': URL,
                          'headers': {'Authorization': 'token ' + TOKEN,
                                      'User-Agent': 'BiocondaCommentResponder'},
                          'body': payload,
-                         'json': true});
+                         'json': true}, requestCallback);
     }
   } catch(e) {
     await sendComment(PR, "I received an error uploading the build artifacts or merging the PR!");
