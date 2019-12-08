@@ -419,7 +419,7 @@ async function downloadAndUpload(x) {
     }
   } else if(x.endsWith(".bz2")) { // Package
     console.log("uploading package");
-    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["-t", ANACONDA_TOKEN, "upload", newName]);
+    await exec.exec("/home/runner/miniconda/envs/bioconda/bin/anaconda", ["--force", "-t", ANACONDA_TOKEN, "upload", newName]);
   }
 
   console.log("cleaning up");
