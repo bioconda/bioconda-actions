@@ -451,6 +451,7 @@ function mergePR(PR) {
             else {
                 console.log("uploading artifacts");
                 var sha = yield uploadArtifacts(PR);
+                console.log("artifacts uploaded");
                 // Hit merge
                 var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
                 const payload = { 'sha': sha,

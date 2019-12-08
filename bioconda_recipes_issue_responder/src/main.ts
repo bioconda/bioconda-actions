@@ -470,6 +470,7 @@ async function mergePR(PR) {
     } else {
       console.log("uploading artifacts");
       var sha = await uploadArtifacts(PR);
+      console.log("artifacts uploaded");
 
       // Hit merge
       var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
