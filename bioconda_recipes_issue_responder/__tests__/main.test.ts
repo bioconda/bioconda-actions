@@ -424,6 +424,44 @@ async function uploadArtifacts(PR) {
 }
 
 
+// bioconda/bot "5cb3e76bd73408ce4fbdb5a5"
+// bioconda/lobby "57f3b80cd73408ce4f2bba26"
+async function gitterMessage(msg) {
+  const TOKEN = process.env['GITTER_TOKEN'];
+  var roomID = "5cb3e76bd73408ce4fbdb5a5";
+  var URL = "https://api.gitter.im/v1/rooms/" + roomID + "/chatMessages"
+
+  console.log("Sending request");
+  await request.post({
+    'url': URL,
+    'headers': {'Authorization': 'Bearer ' + TOKEN,
+                'Accept': 'application/json',
+                'User-Agent': 'BiocondaCommentResponder'},
+    'json': {
+      body: msg
+    }}, requestCallback);
+}
+
+
+// Assume we have no more than 250 commits in a PR, which is probably reasonable in most cases
+async function getPRCommitMessages(issueNumber) {
+  const TOKEN = process.env['BOT_TOKEN'];
+  const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + issueNumber + "/commits";
+  var commits = [];
+  await request.get({
+    'url': URL,
+    'headers': {'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder'}
+    }, function(e, r, b) {
+      commits = JSON.parse(b);
+    });
+
+  var msg = commits.reverse().map(x => " * " + x['commit']['message'] + "\n").join("");
+
+  console.log(msg);
+};
+
+
 async function runner() {
   //await artifactChecker();
   //await commentReposter('dpryan79', 18794, "some text");
@@ -435,6 +473,8 @@ async function runner() {
   //console.log("status of 18871: " + await checkIsMergeable(18871));
   //console.log("status of 18815: " + await checkIsMergeable(18815));
   //await uploadArtifacts(18815);
+  await getPRCommitMessages(19166);
+  //await gitterMessage("I am a message");
 }
 
 test('test artifacts', runner);

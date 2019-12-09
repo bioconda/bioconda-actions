@@ -437,6 +437,24 @@ function uploadArtifacts(PR) {
         return sha;
     });
 }
+// Assume we have no more than 250 commits in a PR, which is probably reasonable in most cases
+function getPRCommitMessages(issueNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['BOT_TOKEN'];
+        const URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + issueNumber + "/commits";
+        var commits = [];
+        yield request.get({
+            'url': URL,
+            'headers': { 'Authorization': 'token ' + TOKEN,
+                'User-Agent': 'BiocondaCommentResponder' }
+        }, function (e, r, b) {
+            commits = JSON.parse(b);
+        });
+        var msg = commits.reverse().map(x => " * " + x['commit']['message'] + "\n").join("");
+        console.log(msg);
+    });
+}
+;
 // Merge a PR
 function mergePR(PR) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -452,11 +470,13 @@ function mergePR(PR) {
                 console.log("uploading artifacts");
                 var sha = yield uploadArtifacts(PR);
                 console.log("artifacts uploaded");
+                // Carry over last 250 commit messages
+                var msg = yield getPRCommitMessages(PR);
                 // Hit merge
                 var URL = "https://api.github.com/repos/bioconda/bioconda-recipes/pulls/" + PR + "/merge";
                 const payload = { 'sha': sha,
                     'commit_title': '[ci skip] Merge PR ' + PR,
-                    'commit_message': 'Merge PR ' + PR,
+                    'commit_message': 'Merge PR #' + PR + ', commits were: \n' + msg,
                     'merge_method': 'squash' };
                 console.log("Putting merge commit");
                 yield request.put({ 'url': URL,
