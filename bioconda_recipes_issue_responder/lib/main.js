@@ -451,7 +451,7 @@ function getPRCommitMessages(issueNumber) {
             commits = JSON.parse(b);
         });
         var msg = commits.reverse().map(x => " * " + x['commit']['message'] + "\n").join("");
-        console.log(msg);
+        return msg;
     });
 }
 ;

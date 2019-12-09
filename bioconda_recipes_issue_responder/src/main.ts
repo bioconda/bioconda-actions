@@ -472,7 +472,7 @@ async function getPRCommitMessages(issueNumber) {
 
   var msg = commits.reverse().map(x => " * " + x['commit']['message'] + "\n").join("");
 
-  console.log(msg);
+  return msg;
 };
 
 
