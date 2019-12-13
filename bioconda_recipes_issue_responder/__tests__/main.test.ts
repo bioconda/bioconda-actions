@@ -431,15 +431,21 @@ async function gitterMessage(msg) {
   var roomID = "5cb3e76bd73408ce4fbdb5a5";
   var URL = "https://api.gitter.im/v1/rooms/" + roomID + "/chatMessages"
 
-  console.log("Sending request");
+  console.log("Sending request to " + URL);
   await request.post({
     'url': URL,
     'headers': {'Authorization': 'Bearer ' + TOKEN,
+                'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'User-Agent': 'BiocondaCommentResponder'},
-    'json': {
-      body: msg
-    }}, requestCallback);
+    'json': true,
+    'body': {'text': msg}
+    }, requestCallback);
+}
+
+
+async function notifyReady(PR) {
+  await gitterMessage("PR ready for review: https://github.com/bioconda/bioconda-recipes/pull/" + PR);
 }
 
 
@@ -473,8 +479,9 @@ async function runner() {
   //console.log("status of 18871: " + await checkIsMergeable(18871));
   //console.log("status of 18815: " + await checkIsMergeable(18815));
   //await uploadArtifacts(18815);
-  await getPRCommitMessages(19166);
+  //await getPRCommitMessages(19166);
   //await gitterMessage("I am a message");
+  await notifyReady(19262);
 }
 
 test('test artifacts', runner);

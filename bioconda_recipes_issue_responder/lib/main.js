@@ -122,15 +122,15 @@ function makeArtifactComment(PR, sha) {
                     let condaInstallURL = item.split("/packages/")[0] + "/packages";
                     if (item.includes("/packages/noarch/")) {
                         comment += "noarch |";
-                        installNoarch += "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
+                        installNoarch = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
                     }
                     else if (item.includes("/packages/linux-64/")) {
                         comment += "linux-64 |";
-                        installLinux += "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
+                        installLinux = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
                     }
                     else {
                         comment += "osx-64 |";
-                        installOSX += "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
+                        installOSX = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
                     }
                     comment += " [" + packageName + "](" + item + ") | [repodata.json](" + repoURL + ")\n";
                 }
@@ -507,6 +507,34 @@ function addPRLabel(PR) {
             'json': true });
     });
 }
+function gitterMessage(msg) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const TOKEN = process.env['GITTER_TOKEN'];
+        var roomID = "57f3b80cd73408ce4f2bba26";
+        var URL = "https://api.gitter.im/v1/rooms/" + roomID + "/chatMessages";
+        console.log("Sending request to " + URL);
+        yield request.post({
+            'url': URL,
+            'headers': { 'Authorization': 'Bearer ' + TOKEN,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'User-Agent': 'BiocondaCommentResponder' },
+            'json': true,
+            'body': { 'text': msg }
+        });
+    });
+}
+function notifyReady(PR) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield gitterMessage("[The bot, masquerading as Devon] PR ready for review: https://github.com/bioconda/bioconda-recipes/pull/" + PR);
+        }
+        catch (error) {
+            console.log(error);
+            // Do not die if we can't post to gitter!
+        }
+    });
+}
 // This requires that a JOB_CONTEXT environment variable, which is made with `toJson(github)`
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -533,6 +561,7 @@ function run() {
                 }
                 else if (comment.includes(' please add label')) {
                     yield addPRLabel(issueNumber);
+                    yield notifyReady(issueNumber);
                     //} else {
                     // Methods in development can go below, flanked by checking who is running them
                     //if(jobContext['actor'] != 'dpryan79') {
