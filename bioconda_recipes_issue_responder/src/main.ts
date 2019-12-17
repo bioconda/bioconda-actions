@@ -169,7 +169,7 @@ async function makeArtifactComment(PR, sha) {
     await sendComment(PR, comment);
 
   } else {
-    await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
+    await sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped.");
   }
 }
 
@@ -549,7 +549,7 @@ async function gitterMessage(msg) {
 
 async function notifyReady(PR) {
   try {
-    await gitterMessage("[The bot, masquerading as Devon] PR ready for review: https://github.com/bioconda/bioconda-recipes/pull/" + PR);
+    await gitterMessage("PR ready for review: https://github.com/bioconda/bioconda-recipes/pull/" + PR);
   } catch(error) {
     console.log(error);
     // Do not die if we can't post to gitter!

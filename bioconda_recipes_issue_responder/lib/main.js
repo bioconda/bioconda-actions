@@ -166,7 +166,7 @@ function makeArtifactComment(PR, sha) {
             yield sendComment(PR, comment);
         }
         else {
-            yield sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped. -The Bot");
+            yield sendComment(PR, "No artifacts found on the most recent CircleCI build. Either the build failed or the recipe was blacklisted/skipped.");
         }
     });
 }
@@ -527,7 +527,7 @@ function gitterMessage(msg) {
 function notifyReady(PR) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield gitterMessage("[The bot, masquerading as Devon] PR ready for review: https://github.com/bioconda/bioconda-recipes/pull/" + PR);
+            yield gitterMessage("PR ready for review: https://github.com/bioconda/bioconda-recipes/pull/" + PR);
         }
         catch (error) {
             console.log(error);
