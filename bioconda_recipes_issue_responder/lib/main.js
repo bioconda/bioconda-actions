@@ -67,7 +67,8 @@ function fetchArtifacts(ID) {
         res = res.replace(/:pretty-path/g, "\"pretty-path\":");
         res = res.replace(/:url/g, "\"url\":");
         let artifacts = JSON.parse(res).filter(x => x['url'].endsWith(".tar.gz") || x['url'].endsWith(".tar.bz2") || x['url'].endsWith("/repodata.json")).map(x => x['url']);
-        return (artifacts);
+        let unique = (array) => [...new Set(array)];
+        return (unique(artifacts));
     });
 }
 // Given a PR and commit sha, fetch a list of the artifacts
