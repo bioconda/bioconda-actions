@@ -118,9 +118,9 @@ async function makeArtifactComment(PR, sha) {
     artifacts.forEach(function(itemNever, idx, arr) {
       var item = <string> itemNever;
       if(item.endsWith(".tar.bz2")) {
-        let packageName = item.split("/").pop();
-        let repoURL = arr[idx - 1];
-        let condaInstallURL = item.split("/packages/")[0] + "/packages";
+        let [, basedir = "", subdir = "", packageName = ""] = item.match(/^(.+)\/(.+)\/(.+)$/) || [];
+        let repoURL = [basedir, subdir, "repodata.json"].join("/");
+        let condaInstallURL = basedir;
 
         if(item.includes("/packages/noarch/")) {
           comment += "noarch |";
