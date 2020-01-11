@@ -65,7 +65,8 @@ async function fetchArtifacts(ID) {
   res = res.replace(/:pretty-path/g, "\"pretty-path\":");
   res = res.replace(/:url/g, "\"url\":");
   let artifacts = JSON.parse(res).filter(x => x['url'].endsWith(".tar.gz") || x['url'].endsWith(".tar.bz2") || x['url'].endsWith("/repodata.json")).map(x => x['url']);
-  return(artifacts);
+  let unique = (array) => [...new Set(array)];
+  return(unique(artifacts));
 }
 
 
@@ -116,23 +117,23 @@ async function makeArtifactComment(PR, sha) {
 
     // Table of packages and repodata.json
     artifacts.forEach(function(itemNever, idx, arr) {
-      var item = <string> itemNever;
-      if(item.endsWith(".tar.bz2")) {
-        let packageName = item.split("/").pop();
-        let repoURL = arr[idx - 1];
-        let condaInstallURL = item.split("/packages/")[0] + "/packages";
+      let packageMatch = (<string> itemNever).match(/^(.+)\/(.+)\/(.+\.tar\.bz2)$/);
+      if(packageMatch) {
+        let [url, basedir, subdir, packageName] = packageMatch
+        let repoURL = [basedir, subdir, "repodata.json"].join("/");
+        let condaInstallURL = basedir;
 
-        if(item.includes("/packages/noarch/")) {
+        if(subdir === "noarch") {
           comment += "noarch |";
           installNoarch = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
-        } else if(item.includes("/packages/linux-64/")) {
+        } else if(subdir === "linux-64") {
           comment += "linux-64 |";
           installLinux = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
         } else {
           comment += "osx-64 |";
           installOSX = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
         }
-        comment += " [" + packageName + "](" + item + ") | [repodata.json](" + repoURL + ")\n";
+        comment += " [" + packageName + "](" + url + ") | [repodata.json](" + repoURL + ")\n";
       }
     });
 
