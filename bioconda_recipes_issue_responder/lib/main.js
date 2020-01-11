@@ -115,16 +115,16 @@ function makeArtifactComment(PR, sha) {
             var installOSX = "";
             // Table of packages and repodata.json
             artifacts.forEach(function (itemNever, idx, arr) {
-                var item = itemNever;
-                if (item.endsWith(".tar.bz2")) {
-                    let [, basedir = "", subdir = "", packageName = ""] = item.match(/^(.+)\/(.+)\/(.+)$/) || [];
+                let packageMatch = itemNever.match(/^(.+)\/(.+)\/(.+\.tar\.bz2)$/);
+                if (packageMatch) {
+                    let [url, basedir, subdir, packageName] = packageMatch;
                     let repoURL = [basedir, subdir, "repodata.json"].join("/");
                     let condaInstallURL = basedir;
-                    if (item.includes("/packages/noarch/")) {
+                    if (subdir === "noarch") {
                         comment += "noarch |";
                         installNoarch = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
                     }
-                    else if (item.includes("/packages/linux-64/")) {
+                    else if (subdir === "linux-64") {
                         comment += "linux-64 |";
                         installLinux = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
                     }
@@ -132,7 +132,7 @@ function makeArtifactComment(PR, sha) {
                         comment += "osx-64 |";
                         installOSX = "```\nconda install -c " + condaInstallURL + " <package name>\n```\n";
                     }
-                    comment += " [" + packageName + "](" + item + ") | [repodata.json](" + repoURL + ")\n";
+                    comment += " [" + packageName + "](" + url + ") | [repodata.json](" + repoURL + ")\n";
                 }
             });
             // Conda install examples
