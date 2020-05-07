@@ -52,29 +52,31 @@ async function run() {
   // Step 2: Setup conda
   core.addPath(home.concat("/miniconda/bin"));
   await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--set", "always_yes", "yes"]);
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "defaults"]);
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "bioconda"]);
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "conda-forge"]);
 
 
   // Step 3: Install bioconda-utils, which is currently the most recent version
   envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "").replace("\n", "");
   if(process.platform == "linux") {
-    await exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
+    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-p", home.concat("/bioconda"), "-c", "conda-forge", "-c", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
   } else {
     // libarchive 3.4.0 is broken on OSX, https://github.com/conda-forge/libarchive-feedstock/issues/43
-    await exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "libarchive=3.3.3"]);
+    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-p", home.concat("/bioconda"), "-c", "conda-forge", "-c", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "libarchive=3.3.3"]);
   }
+  await io.rmRF(home.concat("/miniconda"));
+  core.addPath(home.concat("/bioconda/bin"));
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "defaults"]);
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "bioconda"]);
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "conda-forge"]);
 
   // step 4: cleanup
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["clean", "-y", "--all"]);
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["clean", "-y", "--all"]);
 
   // Add local channel as highest priority
-  await io.mkdirP(home.concat("/miniconda/conda-bld/noarch"));
-  await io.mkdirP(home.concat("/miniconda/conda-bld/linux-64"));
-  await io.mkdirP(home.concat("/miniconda/conda-bld/osx-64"));
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["index", home.concat("/miniconda/conda-bld")]);
-  await exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/conda-bld")]);
+  await io.mkdirP(home.concat("/bioconda/conda-bld/noarch"));
+  await io.mkdirP(home.concat("/bioconda/conda-bld/linux-64"));
+  await io.mkdirP(home.concat("/bioconda/conda-bld/osx-64"));
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["index", home.concat("/bioconda/conda-bld")]);
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/bioconda/conda-bld")]);
 };
 
 try {
