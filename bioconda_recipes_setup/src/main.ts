@@ -18,9 +18,8 @@ function parseCommonSh(fname) {
 
 // This should all be cached!
 async function run() {
-  // Download and parse common.sh
-  const common_sh = await tc.downloadTool("https://raw.githubusercontent.com/bioconda/bioconda-common/master/common.sh");
-  const envVars = parseCommonSh(common_sh);
+  // parse common.sh, which was downloaded in a previous action
+  const envVars = parseCommonSh("common.sh");
 
   if(process.platform == "linux") {
     var tag = "Linux";
