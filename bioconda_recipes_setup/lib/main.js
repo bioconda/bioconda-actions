@@ -63,21 +63,20 @@ function run() {
         // Step 3: Install bioconda-utils, which is currently the most recent version
         envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "").replace("\n", "");
         if (process.platform == "linux") {
-            yield exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
+            yield exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
         }
         else {
             // libarchive 3.4.0 is broken on OSX, https://github.com/conda-forge/libarchive-feedstock/issues/43
-            yield exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-n", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "libarchive=3.3.3"]);
+            yield exec.exec(home.concat("/miniconda/bin/conda"), ["install", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "libarchive=3.3.3"]);
         }
-        core.addPath(home.concat("/miniconda/envs/bioconda/bin"));
         // step 4: cleanup
         yield exec.exec(home.concat("/miniconda/bin/conda"), ["clean", "-y", "--all"]);
         // Add local channel as highest priority
-        yield io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/noarch"));
-        yield io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/linux-64"));
-        yield io.mkdirP(home.concat("/miniconda/envs/bioconda/conda-bld/osx-64"));
-        yield exec.exec(home.concat("/miniconda/bin/conda"), ["index", home.concat("/miniconda/envs/bioconda/conda-bld")]);
-        yield exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/envs/bioconda/conda-bld")]);
+        yield io.mkdirP(home.concat("/miniconda/conda-bld/noarch"));
+        yield io.mkdirP(home.concat("/miniconda/conda-bld/linux-64"));
+        yield io.mkdirP(home.concat("/miniconda/conda-bld/osx-64"));
+        yield exec.exec(home.concat("/miniconda/bin/conda"), ["index", home.concat("/miniconda/conda-bld")]);
+        yield exec.exec(home.concat("/miniconda/bin/conda"), ["config", "--system", "--add", "channels", "file://" + home.concat("/miniconda/conda-bld")]);
     });
 }
 ;
