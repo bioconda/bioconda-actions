@@ -71,6 +71,8 @@ function run() {
         yield exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "defaults"]);
         yield exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "bioconda"]);
         yield exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "conda-forge"]);
+        yield exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--remove", "repodata_fns", "current_repodata.json"], { ignoreReturnCode: true });
+        yield exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--prepend", "repodata_fns", "repodata.json"]);
         // step 4: cleanup
         yield exec.exec(home.concat("/bioconda/bin/conda"), ["clean", "-y", "--all"]);
         // Add local channel as highest priority
