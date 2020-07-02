@@ -214,7 +214,7 @@ function commentReposter(user, PR, s) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!(yield isBiocondaMember(user))) {
             console.log("Reposting for " + user);
-            yield sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n\n> " + s);
+            yield sendComment(PR, "Reposting for @" + user + " to enable pings (courtesy of the BiocondaBot):\n\n> " + s);
         }
         else {
             console.log("Not reposting for " + user);
@@ -543,9 +543,10 @@ function run() {
         console.log(jobContext);
         if (jobContext['event']['issue']['pull_request'] !== undefined) {
             const issueNumber = jobContext['event']['issue']['number'];
-            const comment = jobContext['event']['comment']['body'];
-            console.log('the comment is: ' + comment);
-            if (comment.startsWith('@bioconda-bot') || comment.startsWith('@BiocondaBot')) {
+            const originalComment = jobContext['event']['comment']['body'];
+            console.log('the comment is: ' + originalComment);
+            comment = originalComment.toLowerCase();
+            if (comment.startsWith('@bioconda-bot') || comment.startsWith('@biocondabot')) {
                 // Cases that need to be implemented are:
                 //   please merge
                 if (comment.includes('please update')) {
@@ -572,7 +573,7 @@ function run() {
                 }
             }
             else if (comment.includes('@bioconda/')) {
-                yield commentReposter(jobContext['actor'], issueNumber, comment);
+                yield commentReposter(jobContext['actor'], issueNumber, originalComment);
             }
         }
     });
