@@ -218,7 +218,7 @@ async function isBiocondaMember(user) {
 async function commentReposter(user, PR, s) {
   if(!await isBiocondaMember(user)) {
     console.log("Reposting for " + user);
-    await sendComment(PR, "Reposting to enable pings (courtesy of the BiocondaBot):\n\n> " + s);
+    await sendComment(PR, "Reposting for @" + user + " to enable pings (courtesy of the BiocondaBot):\n\n> " + s);
   } else {
     console.log("Not reposting for " + user);
   }
