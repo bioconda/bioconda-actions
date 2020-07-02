@@ -565,10 +565,11 @@ async function run() {
   if(jobContext['event']['issue']['pull_request'] !== undefined) {
     const issueNumber = <string> jobContext['event']['issue']['number'];
 
-    const comment = <string> jobContext['event']['comment']['body'];
-    console.log('the comment is: ' + comment);
+    const originalComment = <string> jobContext['event']['comment']['body'];
+    console.log('the comment is: ' + originalComment);
 
-    if(comment.startsWith('@bioconda-bot') || comment.startsWith('@BiocondaBot')) {
+    comment = originalComment.toLowerCase()
+    if(comment.startsWith('@bioconda-bot') || comment.startsWith('@biocondabot')) {
       // Cases that need to be implemented are:
       //   please merge
       if(comment.includes('please update')) {
@@ -590,7 +591,7 @@ async function run() {
         //}
       }
     } else if(comment.includes('@bioconda/')) {
-      await commentReposter(jobContext['actor'], issueNumber, comment);
+      await commentReposter(jobContext['actor'], issueNumber, originalComment);
     }
   }
 }
