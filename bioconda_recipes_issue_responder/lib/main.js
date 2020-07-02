@@ -545,7 +545,7 @@ function run() {
             const issueNumber = jobContext['event']['issue']['number'];
             const originalComment = jobContext['event']['comment']['body'];
             console.log('the comment is: ' + originalComment);
-            comment = originalComment.toLowerCase();
+            const comment = originalComment.toLowerCase();
             if (comment.startsWith('@bioconda-bot') || comment.startsWith('@biocondabot')) {
                 // Cases that need to be implemented are:
                 //   please merge
