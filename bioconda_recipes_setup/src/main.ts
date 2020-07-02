@@ -68,6 +68,9 @@ async function run() {
   await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "bioconda"]);
   await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--add", "channels", "conda-forge"]);
 
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--remove", "repodata_fns", "current_repodata.json"], { ignoreReturnCode: true });
+  await exec.exec(home.concat("/bioconda/bin/conda"), ["config", "--system", "--prepend", "repodata_fns", "repodata.json"]);
+
   // step 4: cleanup
   await exec.exec(home.concat("/bioconda/bin/conda"), ["clean", "-y", "--all"]);
 
