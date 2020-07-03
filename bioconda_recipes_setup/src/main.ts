@@ -57,10 +57,9 @@ async function run() {
   // Step 3: Install bioconda-utils, which is currently the most recent version
   envVars["BIOCONDA_UTILS_TAG"] = envVars["BIOCONDA_UTILS_TAG"].replace("v", "").replace("\n", "");
   if(process.platform == "linux") {
-    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-p", home.concat("/bioconda"), "-c", "conda-forge", "-c", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"]]);
+    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-p", home.concat("/bioconda"), "-c", "conda-forge", "-c", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "git", "pip"]);
   } else {
-    // libarchive 3.4.0 is broken on OSX, https://github.com/conda-forge/libarchive-feedstock/issues/43
-    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-p", home.concat("/bioconda"), "-c", "conda-forge", "-c", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "libarchive=3.3.3"]);
+    await exec.exec(home.concat("/miniconda/bin/conda"), ["create", "-p", home.concat("/bioconda"), "-c", "conda-forge", "-c", "bioconda", "bioconda-utils=" + envVars["BIOCONDA_UTILS_TAG"], "git", "pip", "conda-forge-ci-setup=2.6.0"]);
   }
   await io.rmRF(home.concat("/miniconda"));
   core.addPath(home.concat("/bioconda/bin"));
