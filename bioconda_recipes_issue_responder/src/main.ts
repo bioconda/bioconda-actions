@@ -65,7 +65,7 @@ async function fetchArtifacts(ID) {
   res = res.replace(/:pretty-path/g, "\"pretty-path\":");
   res = res.replace(/:url/g, "\"url\":");
   let artifacts = JSON.parse(res).filter(x => x['url'].endsWith(".tar.gz") || x['url'].endsWith(".tar.bz2") || x['url'].endsWith("/repodata.json")).map(x => x['url']);
-  let unique = (array) => [...new Set(array)];
+  let unique = (array) => <string[]>[...new Set(array)];
   return(unique(artifacts));
 }
 
@@ -74,7 +74,7 @@ async function fetchArtifacts(ID) {
 async function fetchPRShaArtifacts(issue, sha) {
   const URL = 'https://api.github.com/repos/bioconda/bioconda-recipes/commits/' + sha + '/check-runs';
   let crs = {};
-  var artifacts = [];
+  var artifacts:string[] = [];
 
   await request.get({
     'url': URL,
